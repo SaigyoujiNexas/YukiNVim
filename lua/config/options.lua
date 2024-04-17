@@ -1,0 +1,64 @@
+vim.g.autoformat = true
+vim.g.root_spec = { "lsp", { ".git", "lua" }, "cwd" }
+local opt = vim.opt
+
+opt.autowrite = true
+opt.clipboard = "unnamedplus"
+opt.conceallevel = 2
+opt.confirm = true
+opt.completeopt = { "menuone", "noselect" }
+opt.cursorline = true
+opt.expandtab = true
+opt.formatoptions = "jcroqlnt"
+opt.fileencoding = "utf-8"
+opt.grepprg = "rg --vimgrep"
+opt.ignorecase = true
+opt.inccommand = "nosplit"
+opt.laststatus = 3
+opt.list = true
+opt.listchars = { space = "·", tab = "▸·" }
+opt.mouse = "a"
+opt.number = true
+opt.pumblend = 15
+opt.pumheight = 15
+opt.relativenumber = true
+opt.scrolloff = 8
+opt.sessionoptions = { "buffers", "curdir", "tabpages", "winsize", "help", "globals", "skiprtp", "folds" }
+opt.shiftround = true
+opt.shiftwidth = 4
+opt.showmode = false
+opt.sidescrolloff = 8
+opt.signcolumn = "yes"
+opt.smartcase = true
+opt.smartindent = true
+opt.spelllang = { "en", "cjk" }
+opt.splitbelow = true
+opt.splitkeep = "screen"
+opt.splitright = true
+opt.tabstop = 4
+opt.termguicolors = true
+if not vim.g.vscode then
+	opt.timeoutlen = 300
+end
+opt.undofile = true
+opt.undolevels = 10000
+opt.updatetime = 200
+opt.virtualedit = "block"
+opt.wildmode = "longest:full,full"
+opt.winminwidth = 5
+opt.wrap = false
+opt.grepformat = "%f:%l:%c:%m"
+opt.fillchars = {
+	foldopen = "",
+	foldclose = "",
+	fold = " ",
+	foldsep = " ",
+	diff = "╱",
+	eob = " ",
+}
+opt.foldlevel = 99
+vim.opt.foldtext = "v:lua.require'util'.ui.foldtext()"
+vim.opt.statuscolumn = [[%!v:lua.require'util'.ui.statuscolumn()]]
+vim.opt.foldtext = "v:lua.require'util'.ui.foldtext()"
+vim.o.formatexpr = "v:lua.require'util'.format.formatexpr()"
+vim.g.markdown_recommended_style = 0
