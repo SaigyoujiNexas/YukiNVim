@@ -73,6 +73,8 @@ map("t", "<C-l>", "<cmd>wincmd l<cr>", { desc = "Go to right window" })
 map("n", "<leader>-", "<C-W>s", { desc = "Split window below", remap = true })
 map("n", "<leader>|", "<C-W>v", { desc = "Split window right", remap = true })
 
+------------------ LSP Keymap start --------------
+
 ---@type LazyKeysSpec[]|nil
 local lsp_keys = {
 	{
@@ -101,6 +103,7 @@ local lsp_keys = {
 	},
 	{ "K", vim.lsp.buf.hover, desc = "Hover" },
 	{ "gK", vim.lsp.buf.signature_help, desc = "Signature Help", has = "signatureHelp" },
+	{ "<c-k>", vim.lsp.buf.signature_help, mode = "i", desc = "Signature Help", has = "signatureHelp" },
 	{ "<leader>ca", vim.lsp.buf.code_action, desc = "Code Action", mode = { "n", "v" }, has = "codeAction" },
 	{ "<leader>cl", vim.lsp.codelens.run, desc = "Run Codelens", mode = { "n", "v" }, has = "codeLens" },
 	{ "<leader>cc", vim.lsp.codelens.refresh, desc = "Refresh Codelens", mode = { "n", "v" }, has = "codeLens" },
@@ -113,6 +116,7 @@ local lsp_keys = {
 		has = "codeAction",
 	},
 }
+
 if YukiVim.has("inc-rename.nvim") then
 	lsp_keys[#lsp_keys + 1] = {
 		"<leader>cr",
@@ -132,6 +136,8 @@ vim.api.nvim_create_autocmd("LspAttach", {
 	group = vim.api.nvim_create_augroup("UserLspConfig", {}),
 	callback = function(ev)
 		local buffer = ev.buf
+
+		---@param method string
 		local has_usable = function(buf, method)
 			method = method:find("/") and method or "textDocument/" .. method
 			local clients = YukiVim.lsp.get_clients({ bufnr = buf })
@@ -142,9 +148,11 @@ vim.api.nvim_create_autocmd("LspAttach", {
 			end
 			return false
 		end
+
 		vim.bo[buffer].omnifunc = "v:lua.vim.lsp.omnifunc"
 		local Keys = require("lazy.core.handler.keys")
 		local keymaps = YukiVim.lsp.lspKeyResolve(buffer, lsp_keys)
+
 		for _, keys in pairs(keymaps) do
 			if not keys.has or has_usable(buffer, keys.has) then
 				local opts = Keys.opts(keys)
@@ -153,14 +161,15 @@ vim.api.nvim_create_autocmd("LspAttach", {
 				opts.buffer = buffer
 				vim.keymap.set(keys.mode or "n", keys.lhs, keys.rhs, opts)
 			end
+
 			vim.keymap.set("n", "<leader>re", function()
 				vim.lsp.buf.code_action({ only = { "refactor" } })
-			end, opt)
+			end)
 			vim.keymap.set("n", "<leader>qf", function()
 				vim.lsp.buf.code_action({
 					only = { "quickfix" },
 				})
-			end, opt)
+			end)
 		end
 	end,
 })

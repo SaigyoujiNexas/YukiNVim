@@ -7,7 +7,9 @@ local M = {}
 local defaults = {
 	---@type string|fun()
 	colorscheme = function()
-		require("catppuccin").load()
+		if not vim.g.vscode then
+			require("catppuccin").load()
+		end
 	end,
 	defaults = {
 		autocmds = true,
@@ -120,9 +122,6 @@ local options
 
 ---@param opts? YukiVimOptions
 function M.setup(opts)
-	-- load options first for to give support to other.
-	M.load("options")
-
 	options = vim.tbl_deep_extend("force", defaults, opts or {}) or {}
 
 	local autocmds = vim.fn.argc(-1) == 0
@@ -144,17 +143,18 @@ function M.setup(opts)
 			YukiVim.root.setup()
 		end,
 	})
-    YukiVim.try(function()
-	if type(M.colorscheme) == "function" then
-		M.colorscheme()
-	else
-		vim.cmd.colorscheme(M.colorscheme)
-	end
-end,{
-msg = "Could not load your colorscheme",
-on_error = function(msg)
-    YukiVim.error(msg)
-end})
+	YukiVim.try(function()
+		if type(M.colorscheme) == "function" then
+			M.colorscheme()
+		else
+			vim.cmd.colorscheme(M.colorscheme)
+		end
+	end, {
+		msg = "Could not load your colorscheme",
+		on_error = function(msg)
+			YukiVim.error(msg)
+		end,
+	})
 end
 
 ---@param buf? number
@@ -182,6 +182,14 @@ function M.load(name)
 	_load("config." .. name)
 	local pattern = "YukiVim" .. name:sub(1, 1):upper() .. name:sub(2)
 	vim.api.nvim_exec_autocmds("User", { pattern = pattern, modeline = false })
+end
+M.initialized = false
+function M.init()
+	if M.initialized then
+		return
+	end
+	M.initialized = true
+	M.load("options")
 end
 
 setmetatable(M, {

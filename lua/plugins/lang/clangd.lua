@@ -54,21 +54,21 @@ return {
 	{
 		"williamboman/mason-lspconfig.nvim",
 		opts = function(_, opts)
-			YukiVim.list_insert_unique(opts.ensure_installed, "clangd")
+			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, "clangd")
 		end,
 	},
 	{
 		"williamboman/mason.nvim",
 		opts = function(_, opts)
-			if type(opts.ensure_installed) == "table" then
-				vim.list_extend(opts.ensure_installed, { "codelldb" })
-			end
+			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "codelldb" })
 		end,
 	},
 	{
-		"nvim-cmp",
+
+		"WhoIsSethDaniel/mason-tool-installer.nvim",
+		optional = true,
 		opts = function(_, opts)
-			table.insert(opts.sorting.comparators, 1, require("clangd_extensions.cmp_scores"))
+			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "clangd", "codelldb" })
 		end,
 	},
 	{
@@ -137,9 +137,7 @@ return {
 			"williamboman/mason.nvim",
 			optional = true,
 			opts = function(_, opts)
-				if type(opts.ensure_installed) == "table" then
-					vim.list_extend(opts.ensure_installed, { "codelldb" })
-				end
+				opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "codelldb" })
 			end,
 		},
 		opts = function()

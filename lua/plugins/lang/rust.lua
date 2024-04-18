@@ -14,15 +14,13 @@ return {
 		},
 		---@param opts cmp.ConfigSchema
 		opts = function(_, opts)
-			opts.sources = opts.sources or {}
-			table.insert(opts.sources, { name = "crates" })
+			opts.sources = YukiVim.list_insert_unique(opts.sources, { name = "crates" })
 		end,
 	},
 	{
 		"nvim-treesitter/nvim-treesitter",
 		opts = function(_, opts)
-			opts.ensure_installed = opts.ensure_installed or {}
-			vim.list_extend(opts.ensure_installed, { "ron", "rust", "toml" })
+			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "ron", "rust", "toml" })
 		end,
 	},
 	{
@@ -57,16 +55,14 @@ return {
 		"williamboman/mason.nvim",
 		optional = true,
 		opts = function(_, opts)
-			opts.ensure_installed = opts.ensure_installed or {}
-			vim.list_extend(opts.ensure_installed, { "codelldb" })
+			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "codelldb" })
 		end,
 	},
 	{
 		"nvim-neotest/neotest",
 		optional = true,
 		opts = function(_, opts)
-			opts.adapters = opts.adapters or {}
-			vim.list_extend(opts.adapters, {
+			opts.adapters = YukiVim.list_insert_unique(opts.adapters, {
 				require("rustaceanvim.neotest"),
 			})
 		end,

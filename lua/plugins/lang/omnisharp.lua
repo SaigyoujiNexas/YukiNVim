@@ -6,17 +6,13 @@ return {
 	{
 		"nvim-treesitter/nvim-treesitter",
 		opts = function(_, opts)
-			if type(opts.ensure_installed) == "table" then
-				vim.list_extend(opts.ensure_installed, { "c_sharp" })
-			end
+			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "c_sharp" })
 		end,
 	},
 	{
 		"williamboman/mason.nvim",
 		opts = function(_, opts)
-			if type(opts.ensure_installed) == "table" then
-				vim.list_extend(opts.ensure_installed, { "netcoredbg", "csharpier" })
-			end
+			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "netcoredbg", "csharpier" })
 		end,
 	},
 	{
@@ -50,8 +46,7 @@ return {
 		optional = true,
 		opts = function(_, opts)
 			local nls = require("null-ls")
-			opts.sources = opts.sources or {}
-			table.insert(opts.sources, nls.builtins.formatting.csharpier)
+			opts.sources = YukiVim.list_insert_unique(opts.sources, nls.builtins.formatting.csharpier)
 		end,
 	},
 	{

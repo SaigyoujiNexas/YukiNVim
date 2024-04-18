@@ -27,6 +27,7 @@ return {
 	},
 	{
 		"Civitasv/cmake-tools.nvim",
+		ft = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
 		opts = {},
 	},
 	{
@@ -43,5 +44,12 @@ return {
 				cmake = { "cmakelint" },
 			},
 		},
+	},
+	{
+		"WhoIsSethDaniel/mason-tool-installer.nvim",
+		optional = true,
+		opts = function(_, opts)
+			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "neocmakelsp" })
+		end,
 	},
 }

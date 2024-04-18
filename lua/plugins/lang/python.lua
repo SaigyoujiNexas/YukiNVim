@@ -2,9 +2,8 @@ return {
 	{
 		"nvim-treesitter/nvim-treesitter",
 		opts = function(_, opts)
-			if type(opts.ensure_installed) == "table" then
-				vim.list_extend(opts.ensure_installed, { "ninja", "python", "rst", "toml" })
-			end
+			opts.ensure_installed =
+				YukiVim.list_insert_unique(opts.ensure_installed, { "ninja", "python", "rst", "toml" })
 		end,
 	},
 	{
@@ -28,15 +27,13 @@ return {
 	{
 		"williamboman/mason-lspconfig.nvim",
 		opts = function(_, opts)
-			opts.ensure_installed = opts.ensure_installed or {}
-			vim.list_extend(opts.ensure_installed, { "pyright" })
+			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "pyright" })
 		end,
 	},
 	{
 		"jay-babu/mason-null-ls.nvim",
 		opts = function(_, opts)
-			opts.ensure_installed = opts.ensure_installed or {}
-			vim.list_extend(opts.ensure_installed, { "black", "isort" })
+			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "black", "isort" })
 		end,
 	},
 	{

@@ -14,8 +14,7 @@ return {
 	{
 		"nvim-treesitter/nvim-treesitter",
 		opts = function(_, opts)
-			opts.ensure_installed = opts.ensure_installed or {}
-			vim.list_extend(opts.ensure_installed, { "java" })
+			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "java" })
 		end,
 	},
 	{
@@ -24,8 +23,8 @@ return {
 			{
 				"williamboman/mason.nvim",
 				opts = function(_, opts)
-					opts.ensure_installed = opts.ensure_installed or {}
-					vim.list_extend(opts.ensure_installed, { "java-test", "java-debug-adapter" })
+					opts.ensure_installed =
+						YukiVim.list_insert_unique(opts.ensure_installed, { "java-test", "java-debug-adapter" })
 				end,
 			},
 		},
