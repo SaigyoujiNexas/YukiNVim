@@ -59,32 +59,34 @@ return {
 		version = "*",
 		event = "VeryLazy",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
-		opts = {
-			options = {
-				close_command = function(n)
-					require("mini.bufremove").delete(n, false)
-				end,
-				right_mouse_command = function(n)
-					require("mini.bufremove").delete(n, false)
-				end,
-				diagnostics = "nvim_lsp",
-				always_show_bufferline = false,
-				diagnostics_indicator = function(_, _, diag)
-					local icons = require("config").icons.diagnostics
-					local ret = (diag.error and icons.Error .. diag.error .. " " or "")
-						.. (diag.warning and icons.Warn .. diag.warning or "")
-					return vim.trim(ret)
-				end,
-				offsets = {
-					{
-						filetype = "neo-tree",
-						text = "Neo-tree",
-						highlight = "Directory",
-						text_align = "left",
+		opts = function()
+			return {
+				options = {
+					close_command = function(n)
+						require("mini.bufremove").delete(n, false)
+					end,
+					right_mouse_command = function(n)
+						require("mini.bufremove").delete(n, false)
+					end,
+					diagnostics = "nvim_lsp",
+					always_show_bufferline = false,
+					diagnostics_indicator = function(_, _, diag)
+						local icons = require("config").icons.diagnostics
+						local ret = (diag.error and icons.Error .. diag.error .. " " or "")
+							.. (diag.warning and icons.Warn .. diag.warning or "")
+						return vim.trim(ret)
+					end,
+					offsets = {
+						{
+							filetype = "neo-tree",
+							text = "Neo-tree",
+							highlight = "Directory",
+							text_align = "left",
+						},
 					},
 				},
-			},
-		},
+			}
+		end,
 		config = function(_, opts)
 			require("bufferline").setup(opts)
 			vim.api.nvim_create_autocmd("BufAdd", {
@@ -308,7 +310,9 @@ return {
 				sections = {
 					lualine_a = { "mode" },
 					lualine_b = { "branch" },
-					lualine_c = { "filename" },
+					lualine_c = {
+						YukiVim.lualine.root_dir(),
+					},
 					lualine_x = {
 						{
 							function()
@@ -453,5 +457,159 @@ return {
 				vim.notify = require("notify")
 			end)
 		end,
+	},
+	{
+		"folke/edgy.nvim",
+		event = "VeryLazy",
+		keys = {
+			{
+				"<leader>ue",
+				function()
+					require("edgy").toggle()
+				end,
+				desc = "Edgy Toggle",
+			},
+		},
+		opts = function()
+			local opts = {
+				bottom = {
+					{
+						ft = "toggleterm",
+						title = "YukiTerm",
+						size = { height = 0.4 },
+						filter = function(buf, win)
+							return vim.api.nvim_win_get_config(win).relative == ""
+						end,
+					},
+					{
+						ft = "noice",
+						size = { height = 0.4 },
+						filter = function(buf, win)
+							return vim.api.nvim_win_get_config(win).relative == ""
+						end,
+					},
+					"Trouble",
+					{ ft = "qf", title = "QuickFix" },
+					{
+						ft = "help",
+						size = { height = 20 },
+						-- don't open help files in edgy that we're editing
+						filter = function(buf)
+							return vim.bo[buf].buftype == "help"
+						end,
+					},
+					{ title = "Spectre", ft = "spectre_panel", size = { height = 0.4 } },
+					{ title = "Neotest Output", ft = "neotest-output-panel", size = { height = 15 } },
+				},
+				left = {
+					{
+						title = "Neo-Tree",
+						ft = "neo-tree",
+						filter = function(buf)
+							return vim.b[buf].neo_tree_source == "filesystem"
+						end,
+						pinned = true,
+						open = function()
+							vim.api.nvim_input("<esc><space>e")
+						end,
+						size = { height = 0.5 },
+					},
+					{ title = "Neotest Summary", ft = "neotest-summary" },
+					{
+						title = "Neo-Tree Git",
+						ft = "neo-tree",
+						filter = function(buf)
+							return vim.b[buf].neo_tree_source == "git_status"
+						end,
+						pinned = true,
+						open = "Neotree position=right git_status",
+					},
+					{
+						title = "Neo-Tree Buffers",
+						ft = "neo-tree",
+						filter = function(buf)
+							return vim.b[buf].neo_tree_source == "buffers"
+						end,
+						pinned = true,
+						open = "Neotree position=top buffers",
+					},
+					"neo-tree",
+				},
+				keys = {
+					-- increase width
+					["<c-Right>"] = function(win)
+						win:resize("width", 2)
+					end,
+					-- decrease width
+					["<c-Left>"] = function(win)
+						win:resize("width", -2)
+					end,
+					-- increase height
+					["<c-Up>"] = function(win)
+						win:resize("height", 2)
+					end,
+					-- decrease height
+					["<c-Down>"] = function(win)
+						win:resize("height", -2)
+					end,
+				},
+			}
+			return opts
+		end,
+	},
+	{
+		"nvim-telescope/telescope/nvim",
+		optional = true,
+		opts = {
+			defaults = {
+				get_selection_window = function()
+					require("edgy").goto_main()
+					return 0
+				end,
+			},
+		},
+	},
+	{
+		"nvim-neo-tree/neo-tree.nvim",
+		optional = true,
+		opts = function(_, opts)
+			opts.open_files_do_not_replace_types = opts.open_files_do_not_replace_types
+				or { "terminal", "Trouble", "qf", "Outline", "trouble" }
+			table.insert(opts.open_files_do_not_replace_types, "edgy")
+		end,
+	},
+	{
+		"akinsho/bufferline.nvim",
+		optional = true,
+		opts = function()
+			local Offset = require("bufferline.offset")
+			if not Offset.edgy then
+				local get = Offset.get
+				Offset.get = function()
+					if package.loaded.edgy then
+						local layout = require("edgy.config").layout
+						local ret = { left = "", left_size = 0, right = "", right_size = 0 }
+						for _, pos in ipairs({ "left", "right" }) do
+							local sb = layout[pos]
+							if sb and #sb.wins > 0 then
+								local title = " Sidebar" .. string.rep(" ", sb.bounds.width - 8)
+								ret[pos] = "%#EdgyTitle#" .. title .. "%*" .. "%#WinSeparator#│%*"
+								ret[pos .. "_size"] = sb.bounds.width
+							end
+						end
+						ret.total_size = ret.left_size + ret.right_size
+						if ret.total_size > 0 then
+							return ret
+						end
+					end
+					return get()
+				end
+				Offset.edgy = true
+			end
+		end,
+	},
+	{
+		"j-hui/fidget.nvim",
+		opts = {},
 	},
 }

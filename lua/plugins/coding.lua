@@ -25,7 +25,7 @@ return {
 					["<C-f>"] = cmp.mapping.scroll_docs(4),
 					["<C-Space>"] = cmp.mapping.complete(),
 					["<C-e>"] = cmp.mapping.abort(),
-					["<CR>"] = cmp.mapping.confirm({ select = true }),
+					["<CR>"] = cmp.mapping.confirm({ select = false }),
 					["<Tab>"] = cmp.mapping.select_next_item({
 						behavior = cmp.SelectBehavior.Insert,
 					}),
@@ -120,6 +120,7 @@ return {
 		build = not (vim.loop.os_uname().sysname:find("Windows") ~= nil)
 				and "echo 'NOTE: jsregexp is optional, so not a big deal if it fails to build'; make install_jsregexp"
 			or nil,
+		enabled = not vim.snippet,
 		dependencies = {
 			{
 				"rafamadriz/friendly-snippets",
@@ -159,16 +160,16 @@ return {
 		end,
 	},
 	{
-		"echasnovski/mini.comment",
-		event = "VeryLazy",
-		opts = {
-			options = {
-				custom_commentstring = function()
-					return require("ts_context_commentstring.internal").calculate_commentstring()
-						or vim.bo.commentstring
-				end,
-			},
+		"numToStr/Comment.nvim",
+		--event = "VeryLazy",
+		dependencies = {
+			"JoosepAlviste/nvim-ts-context-commentstring",
 		},
+		opts = function()
+			return {
+				pre_hook = require("ts_context_commentstring.integrations.comment_nvim").create_pre_hook(),
+			}
+		end,
 	},
 	{
 		"JoosepAlviste/nvim-ts-context-commentstring",
@@ -180,6 +181,7 @@ return {
 	{
 		"windwp/nvim-autopairs",
 		event = "InsertEnter",
+		config = true,
 		opts = {
 			disable_filetype = { "TelescopePrompt", "vim" },
 		},
@@ -221,6 +223,95 @@ return {
 				replace = "gsr", -- Replace surrounding
 				update_n_lines = "gsn", -- Update `n_lines`
 			},
+		},
+	},
+	vim.snippet and {
+		"nvim-cmp",
+		opts = {
+			snippet = {
+				expand = function(args)
+					vim.snippet.expand(args.body)
+				end,
+			},
+		},
+		keys = {
+			{
+				"<Tab>",
+				function()
+					if vim.snippet.jumpable(1) then
+						vim.schedule(function()
+							vim.snippet.jump(1)
+						end)
+						return
+					end
+					return "<Tab>"
+				end,
+				expr = true,
+				silent = true,
+				mode = "i",
+			},
+			{
+				"<Tab>",
+				function()
+					if vim.snippet.jumpable(1) then
+						vim.schedule(function()
+							vim.snippet.jump(1)
+						end)
+						return
+					end
+					return "<Tab>"
+				end,
+				silent = true,
+				mode = "s",
+			},
+			{
+				"<S-Tab>",
+				function()
+					if vim.snippet.jumpable(-1) then
+						vim.schedule(function()
+							vim.snippet.jump(-1)
+						end)
+						return
+					end
+					return "<S-Tab>"
+				end,
+				expr = true,
+				silent = true,
+				mode = { "i", "s" },
+			},
+		},
+	} or {},
+	{
+		"gbprod/yanky.nvim",
+		dependencies = not YukiVim.is_win() and { "kkharji/sqlite.lua" } or {},
+		opts = {
+			highlight = { timer = 250 },
+			ring = { storage = YukiVim.is_win() and "shada" or "sqlite" },
+		},
+		keys = {
+			{
+				"<leader>p",
+				function()
+					require("telescope").extensions.yank_history.yank_history({})
+				end,
+				desc = "Open Yank History",
+			},
+
+			{ "y", "<Plug>(YankyYank)", mode = { "n", "x" }, desc = "Yank Text" },
+			{ "[y", "<Plug>(YankyCycleForward)", desc = "Cycle Forward Through Yank History" },
+			{ "]y", "<Plug>(YankyCycleBackward)", desc = "Cycle Backward Through Yank History" },
+			{ "p", "<Plug>(YankyPutAfter)", mode = { "n", "x" }, desc = "Put Yanked Text After Cursor" },
+			{ "P", "<Plug>(YankyPutBefore)", mode = { "n", "x" }, desc = "Put Yanked Text Before Cursor" },
+			{ "]p", "<Plug>(YankyPutIndentAfterLinewise)", desc = "Put Indented After Cursor (Linewise)" },
+			{ "[p", "<Plug>(YankyPutIndentBeforeLinewise)", desc = "Put Indented Before Cursor (Linewise)" },
+			{ "]P", "<Plug>(YankyPutIndentAfterLinewise)", desc = "Put Indented After Cursor (Linewise)" },
+			{ "[P", "<Plug>(YankyPutIndentBeforeLinewise)", desc = "Put Indented Before Cursor (Linewise)" },
+			{ ">p", "<Plug>(YankyPutIndentAfterShiftRight)", desc = "Put and Indent Right" },
+			{ "<p", "<Plug>(YankyPutIndentAfterShiftLeft)", desc = "Put and Indent Left" },
+			{ ">P", "<Plug>(YankyPutIndentBeforeShiftRight)", desc = "Put Before and Indent Right" },
+			{ "<P", "<Plug>(YankyPutIndentBeforeShiftLeft)", desc = "Put Before and Indent Left" },
+			{ "=p", "<Plug>(YankyPutAfterFilter)", desc = "Put After Applying a Filter" },
+			{ "=P", "<Plug>(YankyPutBeforeFilter)", desc = "Put Before Applying a Filter" },
 		},
 	},
 }

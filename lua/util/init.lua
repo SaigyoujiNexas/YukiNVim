@@ -6,7 +6,8 @@ local LazyUtil = require("lazy.core.util")
 ---@field root YukiUtil.root
 ---@field toggle YukiUtil.toggle
 ---@field ui YukiUtil.ui
----@field terminal YukiUtil.terminal
+-- -@field terminal YukiUtil.terminal
+---@field lualine YukiUtil.lualine
 local M = {}
 
 setmetatable(M, {

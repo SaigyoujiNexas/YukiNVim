@@ -3,7 +3,9 @@ local map = YukiVim.safe_keymap_set
 map({ "n", "v", "i", "t" }, "：", ":")
 map({ "n", "v", "i", "t" }, "；", ";")
 map({ "n", "v", "i", "t" }, "‘", "'")
+map({ "n", "v", "i", "t" }, "’", "'")
 map({ "n", "v", "i", "t" }, "“", '"')
+map({ "n", "v", "i", "t" }, "”", '"')
 map({ "n", "v", "i", "t" }, "？", "?")
 map({ "n", "v", "i", "t" }, "，", ",")
 map({ "n", "v", "i", "t" }, "。", ".")
@@ -43,16 +45,16 @@ map("n", "[e", diagnostic_goto(false, "ERROR"), { desc = "Prev Error" })
 map("n", "]w", diagnostic_goto(true, "WARN"), { desc = "Next Warning" })
 map("n", "[w", diagnostic_goto(false, "WARN"), { desc = "Prev Warning" })
 
--- floating terminal
-local yukiterm = function()
-	require("util").terminal(nil, { cmd = YukiVim.root() })
-end
-map("n", "<leader>ft", yukiterm, { desc = "Terminal (root dir)" })
-map("n", "<leader>fT", function()
-	YukiVim.terminal()
-end, { desc = "Terminal (cwd)" })
-map("n", "<c-/>", yukiterm, { desc = "Terminal (root dir)" })
-map("n", "<c-_>", yukiterm, { desc = "which_key_ignore" })
+-- terminal setting.
+vim.api.nvim_create_autocmd("TermEnter", {
+	pattern = "term://*toggleterm#*",
+	callback = function()
+		vim.api.nvim_set_keymap("t", "<C-/>", '<cmd>exe v:count1 . "ToggleTerm"<CR>', { silent = true })
+	end,
+})
+
+map("n", "<c-/>", '<cmd>exe v:count1 . "ToggleTerm"<CR>', { silent = true })
+map("i", "<c-/>", '<Esc><cmd>exe v:count1 . "ToggleTerm"<CR>', { silent = true })
 
 -- Resize window using <ctrl> arrow keys
 map("n", "<C-Up>", "<cmd>resize +2<cr>", { desc = "Increase window height" })

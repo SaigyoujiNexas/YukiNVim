@@ -49,14 +49,6 @@ return {
 	},
 	{
 		"stevearc/conform.nvim",
-		opts = {
-			formatters_by_ft = {
-				["python"] = { "black" },
-			},
-		},
-	},
-	{
-		"stevearc/conform.nvim",
 		dependencies = { "mason.nvim" },
 		lazy = true,
 		cmd = "ConformInfo",
@@ -113,6 +105,7 @@ return {
 					fish = { "fish_indent" },
 					sh = { "shfmt" },
 					cs = { "csharpier" },
+					python = { "black" },
 				},
 				---@type table<string, conform.FormatterConfigOverride|fun(bufnr: integer): nil|conform.FormatterConfigOverride>
 				formatters = {
