@@ -161,7 +161,7 @@ return {
 	},
 	{
 		"numToStr/Comment.nvim",
-		--event = "VeryLazy",
+		event = "VeryLazy",
 		dependencies = {
 			"JoosepAlviste/nvim-ts-context-commentstring",
 		},
@@ -181,7 +181,6 @@ return {
 	{
 		"windwp/nvim-autopairs",
 		event = "InsertEnter",
-		config = true,
 		opts = {
 			disable_filetype = { "TelescopePrompt", "vim" },
 		},
