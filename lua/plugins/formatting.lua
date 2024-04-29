@@ -34,8 +34,7 @@ return {
 	{
 		"williamboman/mason.nvim",
 		opts = function(_, opts)
-			opts.ensure_installed = opts.ensure_installed or {}
-			table.insert(opts.ensure_installed, "black")
+			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "black", "prettier" })
 		end,
 	},
 
@@ -43,8 +42,10 @@ return {
 		"nvimtools/none-ls.nvim",
 		opts = function(_, opts)
 			local nls = require("null-ls")
-			opts.sources = opts.sources or {}
-			table.insert(opts.sources, nls.builtins.formatting.black)
+			opts.sources = YukiVim.list_insert_unique(
+				opts.sources,
+				{ nls.builtins.formatting.black, nls.builtins.formatting.prettier }
+			)
 		end,
 	},
 	{
@@ -106,57 +107,30 @@ return {
 					sh = { "shfmt" },
 					cs = { "csharpier" },
 					python = { "black" },
+					["javascript"] = { "prettier" },
+					["javascriptreact"] = { "prettier" },
+					["typescript"] = { "prettier" },
+					["typescriptreact"] = { "prettier" },
+					["vue"] = { "prettier" },
+					["css"] = { "prettier" },
+					["scss"] = { "prettier" },
+					["less"] = { "prettier" },
+					["html"] = { "prettier" },
+					["json"] = { "prettier" },
+					["jsonc"] = { "prettier" },
+					["yaml"] = { "prettier" },
+					["markdown"] = { "prettier" },
+					["markdown.mdx"] = { "prettier" },
+					["graphql"] = { "prettier" },
+					["handlebars"] = { "prettier" },
 				},
 				---@type table<string, conform.FormatterConfigOverride|fun(bufnr: integer): nil|conform.FormatterConfigOverride>
 				formatters = {
-					csharpier = {
-						command = "dotnet-csharpier",
-						args = { "--write-stdout" },
-					},
 					injected = { options = { ignore_errors = true } },
 				},
 			}
 			return opts
 		end,
 		config = M.setup,
-	},
-	{
-		"williamboman/mason.nvim",
-		opts = function(_, opts)
-			opts.ensure_installed = opts.ensure_installed or {}
-			table.insert(opts.ensure_installed, "prettier")
-		end,
-	},
-	{
-		"nvimtools/none-ls.nvim",
-		optional = true,
-		opts = function(_, opts)
-			local nls = require("null-ls")
-			opts.sources = opts.sources or {}
-			table.insert(opts.sources, nls.builtins.formatting.prettier)
-		end,
-	},
-	{
-		"stevearc/conform.nvim",
-		opts = {
-			formatters_by_ft = {
-				["javascript"] = { "prettier" },
-				["javascriptreact"] = { "prettier" },
-				["typescript"] = { "prettier" },
-				["typescriptreact"] = { "prettier" },
-				["vue"] = { "prettier" },
-				["css"] = { "prettier" },
-				["scss"] = { "prettier" },
-				["less"] = { "prettier" },
-				["html"] = { "prettier" },
-				["json"] = { "prettier" },
-				["jsonc"] = { "prettier" },
-				["yaml"] = { "prettier" },
-				["markdown"] = { "prettier" },
-				["markdown.mdx"] = { "prettier" },
-				["graphql"] = { "prettier" },
-				["handlebars"] = { "prettier" },
-			},
-		},
 	},
 }

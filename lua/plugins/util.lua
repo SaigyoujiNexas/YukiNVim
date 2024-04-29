@@ -1,5 +1,13 @@
 local M = {}
 
+---@type string
+local xdg_config = vim.env.XDG_CONFIG_HOME or vim.env.HOME .. "/.config"
+
+---@param path string
+local function have(path)
+	return vim.uv.fs_stat(xdg_config .. "/" .. path) ~= nil
+end
+
 ---@type table<string, true>
 M.hl = {}
 
@@ -398,20 +406,73 @@ return {
 		},
 	},
 	{
+		"neovim/nvim-lspconfig",
+		opts = {
+			servers = {
+				bashls = {},
+			},
+		},
+	},
+	{
+		"williamboman/mason.nvim",
+		opts = function(_, opts)
+			YukiVim.list_insert_unique(opts.ensure_installed, { "shfmt", "shellcheck" })
+		end,
+	},
+	{
+		"nvim-treesitter/nvim-treesitter",
+		opts = function(_, opts)
+			local function add(lang)
+				opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, lang)
+			end
+			vim.filetype.add({
+				extensions = { rasi = "rasi", rofi = "rasi", wofi = "rasi" },
+				filename = {
+					[".env"] = "dotenv",
+					["vifmrc"] = "vim",
+				},
+				pattern = {
+					[".*/waybar/config"] = "jsonc",
+					[".*/mako/config"] = "dosini",
+					[".*/kitty/.+%.conf"] = "bash",
+					[".*/hypr/.+%.conf"] = "hyprlang",
+					["%.env%.[%w_.-]+"] = "dotenv",
+				},
+			})
+			add("git_config")
+			if have("hypr") then
+				add("hyprlang")
+			end
+			if have("fish") then
+				add("fish")
+			end
+			if have("rofi") or have("wofi") then
+				add("rasi")
+			end
+		end,
+	},
+	{
 		"nvim-lua/plenary.nvim",
 		lazy = true,
 	},
 	{
-		"ahmedkhalf/project.nvim",
-		opts = {
-			manual_mode = true,
-		},
-		config = function(_, opts)
-			require("project_nvim").setup(opts)
-			require("telescope").load_extension("projects")
-		end,
-		keys = {
-			{ "<leader>fp", "<Cmd>Telescope projects<CR>", desc = "Projects" },
+		"telescope.nvim",
+		dependencies = {
+			{
+				"ahmedkhalf/project.nvim",
+				opts = {
+					manual_mode = true,
+				},
+				config = function(_, opts)
+					require("project_nvim").setup(opts)
+					YukiVim.on_load("telescope.nvim", function()
+						require("telescope").load_extension("projects")
+					end)
+				end,
+				keys = {
+					{ "<leader>fp", "<Cmd>Telescope projects<CR>", desc = "Projects" },
+				},
+			},
 		},
 	},
 	{
@@ -419,6 +480,21 @@ return {
 		cmd = "StartupTime",
 		config = function()
 			vim.g.startuptime_tries = 10
+		end,
+	},
+	{
+		"nvimdev/dashboard-nvim",
+		optional = true,
+		opts = function(_, opts)
+			local projects = {
+				action = "Telescope projects",
+				desc = " Projects",
+				icon = " ",
+				key = "p",
+			}
+			projects.desc = projects.desc .. string.rep(" ", 43 - #projects.desc)
+			projects.key_format = " %s"
+			table.insert(opts.config.center, 3, projects)
 		end,
 	},
 	M.plugin,
