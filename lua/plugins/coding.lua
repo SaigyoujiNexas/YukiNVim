@@ -9,7 +9,13 @@ return {
 			"hrsh7th/cmp-path",
 			"hrsh7th/cmp-cmdline",
 			"chrisgrieser/cmp-nerdfont",
-			"zbirenbaum/copilot-cmp",
+			-- "zbirenbaum/copilot-cmp",
+			{
+				"Exafunction/codeium.nvim",
+				cmd = "Codeium",
+				build = ":Codeium Auth",
+				opts = {},
+			},
 		},
 		opts = function()
 			vim.api.nvim_set_hl(0, "CmpGhostText", { link = "Comment", default = true })
@@ -35,7 +41,8 @@ return {
 				}),
 				sources = cmp.config.sources({
 					{ name = "nvim_lsp" },
-					{ name = "copilot" },
+					-- { name = "copilot" },
+					{ name = "codeium", group_index = 1, priority = 100 },
 					{ name = "path" },
 				}, {
 					{ name = "buffer" },

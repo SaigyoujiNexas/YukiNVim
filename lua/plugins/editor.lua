@@ -599,7 +599,10 @@ return {
 	},
 	{
 		"akinsho/toggleterm.nvim",
-		versons = "*",
+		versions = "*",
 		config = true,
+		-- opts = {
+		-- 	open_mapping = [[C-/]],
+		-- },
 	},
 }
