@@ -1,44 +1,53 @@
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
-		opts = function(_, opts)
-			opts.ensure_installed =
-				YukiVim.list_insert_unique(opts.ensure_installed, { "ninja", "python", "rst", "toml" })
-		end,
+		opts = { ensure_installed = { "ninja", "rst" } },
 	},
 	{
 		"neovim/nvim-lspconfig",
 		opts = {
 			servers = {
-				pyright = {},
-				ruff_lsp = {},
+				pyright = {
+					enabled = true,
+				},
+				basedpyright = {
+					enabled = false,
+				},
+				ruff_lsp = {
+					enabled = true,
+					keys = {
+						{
+							"<leader>co",
+							YukiVim.lsp.action["source.organizeImports"],
+							desc = "Organize Imports",
+						},
+					},
+				},
+				ruff = {
+					enabled = false,
+				},
 			},
 		},
 		setup = {
 			ruff_lsp = function()
-				require("util").lsp.on_attach(function(client, _)
-					if client.name == "ruff_lsp" then
-						client.server_capanilities.hoverProvider = false
-					end
-				end)
+				YukiVim.lsp.on_attach(function(client, _)
+					client.server_capabilities.hoverProvider = false
+				end, "ruff_lsp")
 			end,
 		},
 	},
-	{
-		"williamboman/mason-lspconfig.nvim",
-		opts = function(_, opts)
-			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "pyright" })
-		end,
-	},
-	{
-		"jay-babu/mason-null-ls.nvim",
-		opts = function(_, opts)
-			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "black", "isort" })
-		end,
-	},
-	{
-		"nvim-neotest/neotest-python",
-	},
+	-- {
+	-- 	"williamboman/mason-lspconfig.nvim",
+	-- 	opts = function(_, opts)
+	-- 		opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "pyright" })
+	-- 	end,
+	-- },
+	-- {
+	-- 	"jay-babu/mason-null-ls.nvim",
+	--
+	-- 		opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "black", "isort" })
+	-- 	end,
+	-- },
 	{
 		"mfussenegger/nvim-dap-python",
         -- stylua: ignore
@@ -88,15 +97,35 @@ return {
 		"mfussenegger/nvim-dap",
 		dependencies = {
 			"mfussenegger/nvim-dap-python",
-    -- stylua: ignore
-    keys = {
-      { "<leader>dPt", function() require('dap-python').test_method() end, desc = "Debug Method", ft = "python" },
-      { "<leader>dPc", function() require('dap-python').test_class() end, desc = "Debug Class", ft = "python" },
-    },
+			keys = {
+				{
+					"<leader>dPt",
+					function()
+						require("dap-python").test_method()
+					end,
+					desc = "Debug Method",
+					ft = "python",
+				},
+				{
+					"<leader>dPc",
+					function()
+						require("dap-python").test_class()
+					end,
+					desc = "Debug Class",
+					ft = "python",
+				},
+			},
 			config = function()
 				local path = require("mason-registry").get_package("debugpy"):get_install_path()
 				require("dap-python").setup(path .. "/venv/bin/python")
 			end,
 		},
+	},
+	{
+		"hrsh7th/nvim-cmp",
+		opts = function(_, opts)
+			opts.auto_brackets = opts.auto_brackets or {}
+			table.insert(opts.auto_brackets, "python")
+		end,
 	},
 }

@@ -5,15 +5,33 @@ return {
 	},
 	{
 		"nvim-treesitter/nvim-treesitter",
+		opts = { ensure_installed = { "c_sharp" } },
+	},
+	{
+		"nvimtools/none-ls.nvim",
 		opts = function(_, opts)
-			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "c_sharp" })
+			local nls = require("null-ls")
+			opts.sources = opts.sources or {}
+			table.insert(opts.sources, nls.builtins.formatting.csharpier)
 		end,
 	},
 	{
+		"stevearc/conform.nvim",
+		opts = {
+			formatters_by_ft = {
+				cs = { "csharpier" },
+			},
+			formatters = {
+				csharpier = {
+					command = "dotnet-csharpier",
+					args = { "--write-stdout" },
+				},
+			},
+		},
+	},
+	{
 		"williamboman/mason.nvim",
-		opts = function(_, opts)
-			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "netcoredbg", "csharpier" })
-		end,
+		opts = { ensure_installed = { "csharpier", "netcoredbg" } },
 	},
 	{
 		"neovim/nvim-lspconfig",
@@ -42,31 +60,7 @@ return {
 		},
 	},
 	{
-		"nvimtools/none-ls.nvim",
-		optional = true,
-		opts = function(_, opts)
-			local nls = require("null-ls")
-			opts.sources = YukiVim.list_insert_unique(opts.sources, nls.builtins.formatting.csharpier)
-		end,
-	},
-	{
-		"stevearc/conform.nvim",
-		optional = true,
-		opts = {
-			formatters_by_ft = {
-				cs = { "csharpier" },
-			},
-			formatters = {
-				csharpier = {
-					command = "dotnet-csharpier",
-					args = { "--write-stdout" },
-				},
-			},
-		},
-	},
-	{
 		"mfussenegger/nvim-dap",
-		optional = true,
 		opts = function()
 			local dap = require("dap")
 			if not dap.adapters["netcoredbg"] then
@@ -93,5 +87,16 @@ return {
 				end
 			end
 		end,
+	},
+	{
+		"nvim-neotest/neotest",
+		dependencies = {
+			"Issafalcon/neotest-dotnet",
+		},
+		opts = {
+			adapters = {
+				["neotest-dotnet"] = {},
+			},
+		},
 	},
 }

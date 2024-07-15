@@ -2,7 +2,7 @@ _G.YukiVim = require("util")
 
 ---@class YukiVimConfig: YukiVimOptions
 local M = {}
-
+YukiVim.config = M
 ---@class YukiVimOptions
 local defaults = {
 	---@type string|fun()

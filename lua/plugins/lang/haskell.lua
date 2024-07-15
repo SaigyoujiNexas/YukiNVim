@@ -15,34 +15,27 @@ return {
 		ft = haskell_ft,
 		dependencies = {
 			{ "nvim-telescope/telescope.nvim", optional = true },
-			{ "mfussenegger/nvim-dap", optional = true },
 		},
 		version = "^3",
-		init = function() end,
-	},
-	{
-		"williamboman/mason-lspconfig.nvim",
-		optional = true,
-		opts = function(_, opts)
-			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "hls" })
+		config = function()
+			local ok, telescope = pcall(require, "telescope")
+			if ok then
+				telescope.load_extension("ht")
+			end
 		end,
 	},
 	{
-		"jay-babu/mason-nvim-dap.nvim",
-		optional = true,
-		opts = function(_, opts)
-			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "haskell" })
-		end,
+		"williamboman/mason.nvim",
+		opts = { ensure_installed = { "haskell-language-server" } },
 	},
 	{
-		"WhoIsSethDaniel/mason-tool-installer.nvim",
-		optional = true,
-		opts = function(_, opts)
-			opts.ensure_installed = YukiVim.list_insert_unique(
-				opts.ensure_installed,
-				{ "haskell-debug-adapter", "haskell-language-server" }
-			)
-		end,
+		"mfussenegger/nvim-dap",
+		dependencies = {
+			{
+				"williamboman/mason.nvim",
+				opts = { ensure_installed = { "haskell-debug-adapter" } },
+			},
+		},
 	},
 	{
 		"mrcjkb/haskell-snippets.nvim",
@@ -65,13 +58,21 @@ return {
 	},
 	{
 		"nvim-neotest/neotest",
-		optional = true,
 		dependencies = { "mrcjkb/neotest-haskell" },
-		opts = function(_, opts)
-			if not opts.adapters then
-				opts.adapters = {}
-			end
-			table.insert(opts.adapters, (require("neotest-haskell")))
-		end,
+		opts = {
+			adapters = {
+				["neotest-haskell"] = {},
+			},
+		},
+	},
+	{
+		"neovim/nvim-lspconfig",
+		opts = {
+			setup = {
+				hls = function()
+					return true
+				end,
+			},
+		},
 	},
 }

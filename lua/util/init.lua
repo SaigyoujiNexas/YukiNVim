@@ -1,6 +1,7 @@
 local LazyUtil = require("lazy.core.util")
 
 ---@class YukiUtil: LazyUtilCore
+---@field config YukiVimConfig
 ---@field format YukiUtil.format
 ---@field lsp YukiUtil.lsp
 ---@field root YukiUtil.root
@@ -32,6 +33,10 @@ setmetatable(M, {
 
 function M.is_win()
 	return vim.loop.os_uname().sysname:find("Windows") ~= nil
+end
+
+function M.is_mac()
+	return vim.loop.os_uname().sysname:find("Darwin") ~= nil
 end
 
 ---@param plugin string

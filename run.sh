@@ -1,9 +1,10 @@
+#!/usr/bin/bash
 rm -rf ~/.clang-format
 printf "BasedOnStyle: LLVM\nIndentWidth: 4" >>~/.clang-format
 
 packet_manager=""
 is_mac=false
-packages=("neovim" "ripgrep" "fd" "gcc" "cmake" "make" "rbenv" "nodejs" "php")
+packages=("neovim" "ripgrep" "gcc" "cmake" "make" "rbenv" "nodejs" "php" "luajit" "libmagickwand-dev" "libgraphicsmagick1-dev luarocks")
 function install_brew() {
 	if type brew >/dev/null 2>&1; then
 		echo "Homebrew is already installed"
@@ -35,7 +36,9 @@ fi
 if $is_mac; then
 	packages+=("ruby-build")
 	packages+=("python")
+	packages+=("fd")
 else
+	packages+=("fd-find")
 	packages+=("ruby")
 	packages+=("python3")
 fi
@@ -53,7 +56,7 @@ fi
 
 $install_command
 
-npm install -g neovim
+sudo npm install -g neovim
 pip3 install neovim
 
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
