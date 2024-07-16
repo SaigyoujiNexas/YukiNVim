@@ -6,52 +6,53 @@ packet_manager=""
 is_mac=false
 packages=("neovim" "ripgrep" "gcc" "cmake" "make" "rbenv" "nodejs" "php" "luajit" "libmagickwand-dev" "libgraphicsmagick1-dev luarocks")
 function install_brew() {
-	if type brew >/dev/null 2>&1; then
-		echo "Homebrew is already installed"
-	else
-		/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-	fi
+    if type brew >/dev/null 2>&1; then
+        echo "Homebrew is already installed"
+    else
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
 }
 
 # config packet_manager and need sudo
 if [[ "$(uname)" == "Darwin" ]]; then
-	echo "This is mac"
-	install_brew
-	packet_manager="brew"
-	is_mac=true
+    echo "This is mac"
+    install_brew
+    packet_manager="brew"
+    is_mac=true
 else
-	packet_manager="apt"
+    packet_manager="apt"
 fi
 
 #update packet manager
 if $is_mac; then
-	brew update
-	brew upgrade
+    brew update
+    brew upgrade
 else
-	sudo apt update
-	sudo apt upgrade
+    sudo apt update
+    sudo apt upgrade
 fi
 
 # add platform packages.
 if $is_mac; then
-	packages+=("ruby-build")
-	packages+=("python")
-	packages+=("fd")
+    packages+=("ruby-build")
+    packages+=("python")
+    packages+=("fd")
+    packages+=("imagemagick")
 else
-	packages+=("fd-find")
-	packages+=("ruby")
-	packages+=("python3")
+    packages+=("fd-find")
+    packages+=("ruby")
+    packages+=("python3")
 fi
 
 # config packages to build install command.
 install_command="${packet_manager} install"
 
 for package in "${packages[@]}"; do
-	install_command="${install_command} ${package}"
+    install_command="${install_command} ${package}"
 done
 
 if ! $is_mac; then
-	install_command="sudo ${install_command}"
+    install_command="sudo ${install_command}"
 fi
 
 $install_command
@@ -67,11 +68,11 @@ sudo mv composer.phar /usr/local/bin/composer
 
 #install cargo
 if ! type cargo >/dev/null 2>&1; then
-	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 fi
 #install sdkman
 if ! [ -d "$HOME/.sdkman" ]; then
-	curl -s "https://get.sdkman.io" | bash
+    curl -s "https://get.sdkman.io" | bash
 fi
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 sdk install java 21.0.3-graal
