@@ -1,7 +1,6 @@
 return {
 	{
 		"nvim-neo-tree/neo-tree.nvim",
-		branch = "v3.x",
 		dependencies = {
 			"nvim-tree/nvim-web-devicons",
 			"nvim-lua/plenary.nvim",
@@ -11,7 +10,7 @@ return {
 		cmd = "Neotree",
 		keys = {
 			{
-				"<C-t>",
+				"<leader>fe",
 				function()
 					require("neo-tree.command").execute({
 						toggle = true,
@@ -21,7 +20,7 @@ return {
 				desc = "Explorer NeoTree (root dir)",
 			},
 			{
-				"<C-w>",
+				"<leader>fE",
 				function()
 					require("neo-tree.command").execute({
 						toggle = true,
@@ -31,24 +30,34 @@ return {
 				desc = "Explorer NeoTree (cwd)",
 			},
 			{
-				"<C-g>",
+				"<leader>e",
+				"<leader>fe",
+				desc = "Explorer NeoTree (root dir)",
+			},
+			{
+				"<leader>E",
+				"<leader>fE",
+				desc = "Explorer NeoTree (cwd)",
+			},
+			{
+				"<leader>ge",
 				function()
 					require("neo-tree.command").execute({
 						source = "git_status",
 						toggle = true,
 					})
 				end,
-				desc = "Git explorer",
+				desc = "Git Explorer",
 			},
 			{
-				"<C-b>",
+				"<leader>be",
 				function()
 					require("neo-tree.command").execute({
 						source = "buffers",
 						toggle = true,
 					})
 				end,
-				desc = "Buffer explorer",
+				desc = "Buffer Explorer",
 			},
 		},
 		deactivate = function()
@@ -99,11 +108,11 @@ return {
 					},
 					["O"] = {
 						function(state)
-							require("lazy.util").open(state.tree.get_node().path, { system = true })
+							require("lazy.util").open(state.tree:get_node().path, { system = true })
 						end,
 						desc = "Open with System Application",
 					},
-					["P"] = { "toggle_preview", config = { use_float = false } },
+					["P"] = { "toggle_preview", config = { use_float = true } },
 				},
 			},
 			default_component_configs = {
@@ -143,49 +152,57 @@ return {
 			})
 		end,
 	},
+	-- search/replace in multiple files
 	{
-		"nvim-pack/nvim-spectre",
-		build = false,
-		cmd = "Spectre",
-		opts = { open_cmd = "noswapfile vnew" },
+		"MagicDuck/grug-far.nvim",
+		opts = { headerMaxWidth = 80 },
+		cmd = "GrugFar",
 		keys = {
 			{
 				"<leader>sr",
 				function()
-					require("spectre").open()
+					local grug = require("grug-far")
+					local ext = vim.bo.buftype == "" and vim.fn.expand("%:e")
+					grug.grug_far({
+						transient = true,
+						prefills = {
+							filesFilter = ext and ext ~= "" and "*." .. ext or nil,
+						},
+					})
 				end,
-				desc = "Replace in Files (Spectre)",
+				mode = { "n", "v" },
+				desc = "Search and Replace",
 			},
 		},
 	},
 
-	{
-		"echasnovski/mini.bufremove",
-
-		keys = {
-			{
-				"<leader>bd",
-				function()
-					local bd = require("mini.bufremove").delete
-					if vim.bo.modified then
-						local choice =
-							vim.fn.confirm(("Save changes to %q?"):format(vim.fn.bufname()), "&Yes\n&No\n&Cancel")
-						if choice == 1 then -- Yes
-							vim.cmd.write()
-							bd(0)
-						elseif choice == 2 then -- No
-							bd(0, true)
-						end
-					else
-						bd(0)
-					end
-				end,
-				desc = "Delete Buffer",
-			},
-    -- stylua: ignore
-    { "<leader>bD", function() require("mini.bufremove").delete(0, true) end, desc = "Delete Buffer (Force)" },
-		},
-	},
+	-- {
+	-- 	"echasnovski/mini.bufremove",
+	--
+	-- 	keys = {
+	-- 		{
+	-- 			"<leader>bd",
+	-- 			function()
+	-- 				local bd = require("mini.bufremove").delete
+	-- 				if vim.bo.modified then
+	-- 					local choice =
+	-- 						vim.fn.confirm(("Save changes to %q?"):format(vim.fn.bufname()), "&Yes\n&No\n&Cancel")
+	-- 					if choice == 1 then -- Yes
+	-- 						vim.cmd.write()
+	-- 						bd(0)
+	-- 					elseif choice == 2 then -- No
+	-- 						bd(0, true)
+	-- 					end
+	-- 				else
+	-- 					bd(0)
+	-- 				end
+	-- 			end,
+	-- 			desc = "Delete Buffer",
+	-- 		},
+	--    -- stylua: ignore
+	--    { "<leader>bD", function() require("mini.bufremove").delete(0, true) end, desc = "Delete Buffer (Force)" },
+	-- 	},
+	-- },
 	{
 		"folke/flash.nvim",
 		event = "VeryLazy",
@@ -212,6 +229,13 @@ return {
 				changedelete = { text = "▎" },
 				untracked = { text = "▎" },
 			},
+			signs_staged = {
+				add = { text = "▎" },
+				change = { text = "▎" },
+				delete = { text = "" },
+				topdelete = { text = "" },
+				changedelete = { text = "▎" },
+			},
 			on_attach = function(buffer)
 				local gs = package.loaded.gitsigns
 
@@ -229,6 +253,9 @@ return {
 				map("n", "<leader>ghb", function()
 					gs.blame_line({ full = true })
 				end, "Blame Line")
+				map("n", "<leader>ghB", function()
+					gs.blame()
+				end, "Blame Buffer")
 				map("n", "<leader>ghd", gs.diffthis, "Diff This")
 				map("n", "<leader>ghD", function()
 					gs.diffthis("~")
@@ -271,65 +298,84 @@ return {
 		},
 	},
 	{
-		"nvim-pack/nvim-spectre",
-		build = false,
-		cmd = "Spectre",
-		opts = { open_cmd = "noswapfile vnew" },
-		keys = {
-			{
-				"<leader>sr",
-				function()
-					require("spectre").open()
-				end,
-				desc = "Replace in files (Spectre)",
-			},
-		},
-	},
-
-	{
 		"nvim-telescope/telescope.nvim",
 		cmd = "Telescope",
-		version = false,
+		branch = "0.1.x",
 		dependencies = {
 			"nvim-lua/plenary.nvim",
 			"nvim-treesitter/nvim-treesitter",
+			"nvim-lua/plenary.nvim",
 			{
 				"nvim-telescope/telescope-fzf-native.nvim",
 				build = vim.fn.executable("make") == 1 and "make"
 					or "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
 				enabled = vim.fn.executable("make") == 1 or vim.fn.executable("cmake") == 1,
-				config = function()
+				config = function(plugin)
 					YukiVim.on_load("telescope.nvim", function()
-						require("telescope").load_extension("fzf")
+						local ok, err = pcall(require("telescope").load_extension, "fzf")
+						if not ok then
+							local lib = plugin.dir .. "/build/libfzf." .. (YukiVim.is_win() and "dll" or "so")
+							if not vim.uv.fs_stat(lib) then
+								YukiVim.warn("`telescope-fzf-native.nvim` not built. Rebuilding...")
+								require("lazy").build({ plugins = { plugin }, show = false }):wait(function()
+									YukiVim.info("Rebuilding `telescope-fzf-native.nvim` done.\nPlease restart Neovim.")
+								end)
+							else
+								YukiVim.error("Failed to load `telescope-fzf-native.nvim`:\n" .. err)
+							end
+						end
 					end)
 				end,
 			},
 		},
 		keys = {
+			{ "<leader>:", "<cmd>Telescope command_history<cr>", desc = "Command History" },
 			{
 				"<leader>gc",
-				"<cmd>Telescope git_commits<CR>",
-				desc = "commits",
+				function()
+					require("telescope.builtin").git_commits()
+				end,
+				desc = "Commits",
 			},
 			{
 				"<leader>gs",
-				"<cmd>Telescope git_status<CR>",
-				desc = "status",
+				function()
+					require("telescope.builtin").git_status()
+				end,
+				desc = "Status",
 			},
 			{
-				"<leader>ff",
-				"<cmd>Telescope find_files<CR>",
-				desc = "find files",
+				"<leader><space>",
+				function()
+					require("telescope.builtin").find_files()
+				end,
+				desc = "Find Files (Root Dir)",
 			},
 			{
-				"<leader>fg",
-				"<cmd>Telescope live_grep<CR>",
-				desc = "live grep",
+				"<leader>/",
+				function()
+					require("telescope.builtin").live_grep()
+				end,
+				desc = "Grep (Root Dir)",
 			},
 			{
 				"<leader>fb",
 				"<cmd>Telescope buffers<CR>",
-				desc = "buffers",
+				desc = "Buffers",
+			},
+			{
+				"<leader>ff",
+				function()
+					require("telescope.builtin").find_files({ no_ignore = true, hidden = true })
+				end,
+				desc = "Find Files (Root Dir)",
+			},
+			{
+				"<leader>fF",
+				function()
+					require("telescope.builtin").find_files({ no_ignore = true, hidden = true, root = false })
+				end,
+				desc = "Find Files (cwd)",
 			},
 			{
 				"<leader>fh",
@@ -345,33 +391,144 @@ return {
 				end,
 				desc = "Goto Symbol",
 			},
+			{
+				"<leader>fg",
+				function()
+					require("telescope.builtin").git_files({ hidden = true })
+				end,
+				desc = "Find Files (git-files)",
+			},
+			{
+				"<leader>fr",
+				function()
+					require("telescope.builtin").oldfiles({ no_ignore = true, hidden = true })
+				end,
+				desc = "Recent",
+			},
+			{
+				"<leader>fR",
+				function()
+					require("telescope.builtin").oldfiles({ cwd = vim.uv.cwd(), no_ignore = true, hidden = true })
+				end,
+				desc = "Recent (cwd)",
+			},
+			{
+				"<leader>sc",
+				function()
+					require("telescope.builtin").command_history()
+				end,
+				desc = "Command History",
+			},
+			{
+				"<leader>sC",
+				function()
+					require("telescope.builtin").commands()
+				end,
+				desc = "Commands",
+			},
+			{
+				"<leader>sd",
+				function()
+					require("telescope.builtin").diagnostics({ bufnr = 0 })
+				end,
+				desc = "Document Diagnostics",
+			},
+			{
+				"<leader>sD",
+				function()
+					require("telescope.builtin").diagnostics()
+				end,
+				desc = "Workspace Diagnostics",
+			},
+			{
+				"<leader>sg",
+				function()
+					require("telescope.builtin").live_grep({ no_ignore = true, hidden = true })
+				end,
+				desc = "Grep (Root Dir)",
+			},
+			{
+				"<leader>sG",
+				function()
+					require("telescope.builtin").live_grep({ root = false, no_ignore = true, hidden = true })
+				end,
+				desc = "Grep (cwd)",
+			},
+			{ "<leader>sh", "<cmd>Telescope help_tags<cr>", desc = "Help Pages" },
+			{ "<leader>sH", "<cmd>Telescope highlights<cr>", desc = "Search Highlight Groups" },
+			{ "<leader>sk", "<cmd>Telescope keymaps<cr>", desc = "Key Maps" },
+			{ "<leader>sl", "<cmd>Telescope loclist<cr>", desc = "Location List" },
+			{ "<leader>sM", "<cmd>Telescope man_pages<cr>", desc = "Man Pages" },
+			{ "<leader>sm", "<cmd>Telescope marks<cr>", desc = "Jump to Mark" },
+			{ "<leader>so", "<cmd>Telescope vim_options<cr>", desc = "Options" },
+			{ "<leader>sR", "<cmd>Telescope resume<cr>", desc = "Resume" },
+			{ "<leader>sq", "<cmd>Telescope quickfix<cr>", desc = "Quickfix List" },
 		},
 		opts = function()
-			YukiVim.on_load("telescope.nvim", function()
-				require("telescope").load_extension("aerial")
-			end)
+			local actions = require("telescope.actions")
+			local open_with_trouble = function(...)
+				return require("trouble.sources.telescope").open(...)
+			end
+			local find_files_no_ignore = function()
+				local action_state = require("telescope.actions.state")
+				local line = action_state.get_current_line()
+				require("telescope.builtin").find_files({ no_ignore = true, default_text = line })
+			end
+			local find_files_with_hidden = function()
+				local action_state = require("telescope.actions.state")
+				local line = action_state.get_current_line()
+				require("telescope.builtin").find_files({ hidden = true, default_text = line })
+			end
+
+			local function find_command()
+				if 1 == vim.fn.executable("rg") then
+					return { "rg", "--files", "--color", "never", "-g", "!.git" }
+				elseif 1 == vim.fn.executable("fd") then
+					return { "fd", "--type", "f", "--color", "never", "-E", ".git" }
+				elseif 1 == vim.fn.executable("fdfind") then
+					return { "fdfind", "--type", "f", "--color", "never", "-E", ".git" }
+				elseif 1 == vim.fn.executable("find") and vim.fn.has("win32") == 0 then
+					return { "find", ".", "-type", "f" }
+				elseif 1 == vim.fn.executable("where") then
+					return { "where", "/r", ".", "*" }
+				end
+			end
 			return {
 				defaults = {
 					prompt_prefix = " ",
 					selection_caret = " ",
-				},
-				get_selection_window = function()
-					local wins = vim.api.nvim_list_wins()
-					table.insert(wins, 1, vim.api.nvim_get_current_win())
-					for _, win in ipairs(wins) do
-						local buf = vim.api.nvim_win_get_buf(win)
-						if vim.bo[buf].buftype == "" then
-							return win
+
+					get_selection_window = function()
+						local wins = vim.api.nvim_list_wins()
+						table.insert(wins, 1, vim.api.nvim_get_current_win())
+						for _, win in ipairs(wins) do
+							local buf = vim.api.nvim_win_get_buf(win)
+							if vim.bo[buf].buftype == "" then
+								return win
+							end
 						end
-					end
-					return 0
-				end,
-				extensions = {
-					fzf = {
-						fuzzy = true,
-						override_generic_sorter = true,
-						override_file_sorter = true,
-						case_mode = "smart_case",
+						return 0
+					end,
+					mappings = {
+						i = {
+							["<c-t>"] = open_with_trouble,
+							["<a-t>"] = open_with_trouble,
+							["<a-i>"] = find_files_no_ignore,
+							["<a-h>"] = find_files_with_hidden,
+							["<C-Down>"] = actions.cycle_history_next,
+							["<C-Up>"] = actions.cycle_history_prev,
+							["<C-j>"] = actions.preview_scrolling_down,
+							["<C-k>"] = actions.preview_scrolling_up,
+						},
+						n = {
+							["q"] = actions.close,
+						},
+					},
+				},
+				pickers = {
+					find_files = {
+						find_command = find_command,
+						hidden = true,
 					},
 				},
 			}
@@ -422,7 +579,13 @@ return {
 				desc = "Previous todo comment",
 			},
 			{ "<leader>xt", "<cmd>TodoTrouble<cr>", desc = "Todo (Trouble)" },
-			{ "<leader>st", "<cnd>TodoTelescope<cr>", desc = "Todo" },
+			{
+				"<leader>xT",
+				"<cmd>Trouble todo toggle filter = {tag = {TODO,FIX,FIXME}}<cr>",
+				desc = "Todo/Fix/Fixme (Trouble)",
+			},
+			{ "<leader>st", "<cmd>TodoTelescope<cr>", desc = "Todo" },
+			{ "<leader>sT", "<cmd>TodoTelescope keywords=TODO,FIX,FIXME<cr>", desc = "Todo/Fix/Fixme" },
 		},
 	},
 	{
@@ -430,22 +593,28 @@ return {
 		dependencies = {
 			"nvim-tree/nvim-web-devicons",
 		},
-		cmd = { "TroubleToggle", "Trouble" },
-		opts = { use_diagnostic_signs = true },
+		cmd = { "Trouble" },
+		opts = {
+			modes = {
+				lsp = {
+					win = { position = "right" },
+				},
+			},
+		},
 		keys = {
 			{
 				"[q",
 				function()
 					if require("trouble").is_open() then
-						require("trouble").previous({ skip_groups = true, jump = true })
+						require("trouble").prev({ skip_groups = true, jump = true })
 					else
-						local ok, err = pcall(vim.diagnostic.goto_prev)
+						local ok, err = pcall(vim.cmd.cprev)
 						if not ok then
 							vim.notify(err, vim.log.levels.ERROR)
 						end
 					end
 				end,
-				desc = "Previous trouble/quickfix item",
+				desc = "Previous trouble/Quickfix Item",
 			},
 			{
 				"]q",
@@ -453,64 +622,85 @@ return {
 					if require("trouble").is_open() then
 						require("trouble").next({ skip_groups = true, jump = true })
 					else
-						local ok, err = pcall(vim.diagnostic.goto_next)
+						local ok, err = pcall(vim.cmd.cnext)
 						if not ok then
 							vim.notify(err, vim.log.levels.ERROR)
 						end
 					end
 				end,
-				desc = "Next trouble/quickfix item",
+				desc = "Next trouble/Quickfix Item",
 			},
+			{ "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Diagnostics (Trouble)" },
+			{ "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics (Trouble)" },
 			{
 				"<leader>xw",
 				"<cmd>TroubleToggle workspace_diagnistics<cr>",
 				desc = "Workspace Diagnostics (Trouble)",
 			},
-			{
-				"<leader>xl",
-				"<cmd>TroubleToggle loclist<cr>",
-				desc = "Location List (Trouble)",
-			},
-			{
-				"<leader>xq",
-				"<cmd>TroubleToggle quickfix<cr>",
-				desc = "Quickfix List (Trouble)",
-			},
+			{ "<leader>xl", "<cmd>Trouble loclist toggle<cr>", desc = "Location List (Trouble)" },
+			{ "<leader>xq", "<cmd>Trouble qflist toggle<cr>", desc = "Quickfix List (Trouble)" },
+			{ "<leader>cS", "<cmd>Trouble lsp toggle<cr>", desc = "LSP references/definitions/... (Trouble)" },
 		},
 	},
 	{
 		"folke/which-key.nvim",
 		event = "VeryLazy",
+		opts_extend = { "spec" },
 		opts = {
 			plugins = { spelling = true },
-			defaults = {
-				mode = { "n", "v" },
-				["g"] = { name = "+goto" },
-				["gd"] = { name = "definition/declaration" },
-				["gs"] = { name = "+surround" },
-				["z"] = { name = "+fold" },
-				["<leader>b"] = { name = "+buffer" },
-				["<leader>c"] = { name = "+code" },
-				["<leader>g"] = { name = "+git" },
-				["<leader>gh"] = { name = "+hunk" },
-				["<leader>f"] = { name = "+file/find" },
-				["<leader>s"] = { name = "+search" },
-				["<leader>x"] = { name = "+diagnositics/quickfix" },
-				["]"] = { name = "+next" },
-				["["] = { name = "+prev" },
+			spec = {
+				{
+					mode = { "n", "v" },
+					{ "<leader><tab>", group = "tabs" },
+					{ "<leader>c", group = "code" },
+					{ "<leader>f", group = "find/file" },
+					{ "<leader>g", group = "git" },
+					{ "<leader>gh", group = "hunk" },
+					{ "<leader>s", group = "search" },
+					{ "<leader>t", group = "test" },
+					{ "<leader>d", group = "debug" },
+					{ "<leader>x", group = "diagnostics/quickfix" },
+					{ "g", group = "goto" },
+					{ "[", group = "prev" },
+					{ "]", group = "next" },
+					{ "z", group = "fold" },
+					{
+						"<leader>b",
+						group = "buffer",
+						expand = function()
+							return require("which-key.extras").expand.buf()
+						end,
+					},
+					{
+						"<leader>w",
+						group = "windows",
+						proxy = "<c-w>",
+						expand = function()
+							return require("which-key.extras").expand.win()
+						end,
+					},
+					{ "gx", desc = "Open with system app" },
+				},
+			},
+		},
+		keys = {
+			{
+				"<leader>?",
+				function()
+					require("which-key").show({ global = false })
+				end,
+				desc = "Buffer Keymaps (which-key)",
 			},
 		},
 		config = function(_, opts)
 			local wk = require("which-key")
 			wk.setup(opts)
-			wk.register(opts.defaults)
 		end,
 	},
 	{
 		"stevearc/aerial.nvim",
 		opts = function()
-			local Config = require("config")
-			local icons = vim.deepcopy(Config.icons.kinds)
+			local icons = vim.deepcopy(YukiVim.config.icons.kinds)
 
 			-- HACK: fix lua's weird choice for `Package` for control
 			-- structures like if/else/for/etc.
@@ -518,8 +708,8 @@ return {
 
 			---@type table<string, string[]>|false
 			local filter_kind = false
-			if Config.kind_filter then
-				filter_kind = assert(vim.deepcopy(Config.kind_filter))
+			if YukiVim.config.kind_filter then
+				filter_kind = assert(vim.deepcopy(YukiVim.config.kind_filter))
 				filter_kind._ = filter_kind.default
 				filter_kind.default = nil
 			end
@@ -548,25 +738,13 @@ return {
 			return opts
 		end,
 		keys = {
-			{ "<leader>sf", "<cmd>AerialToggle<cr>", desc = "Aerial (Symbols)" },
+			{ "<leader>cs", "<cmd>AerialToggle<cr>", desc = "Aerial (Symbols)" },
 		},
 	},
 	{
 		"folke/edgy.nvim",
 		optional = true,
 		opts = function(_, opts)
-			-- local edgy_idx = YukiVim.plugin.extra_idx("ui.edgy")
-			-- local aerial_idx = YukiVim.plugin.extra_idx("editor.aerial")
-			--
-			-- if edgy_idx and edgy_idx > aerial_idx then
-			-- 	YukiVim.warn(
-			-- 		"The `edgy.nvim` extra must be **imported** before the `aerial.nvim` extra to work properly.",
-			-- 		{
-			-- 			title = "LazyVim",
-			-- 		}
-			-- 	)
-			-- end
-
 			opts.right = opts.right or {}
 			table.insert(opts.right, {
 				title = "Aerial",
@@ -615,7 +793,7 @@ return {
 		end,
 		keys = {
 			{
-				"<leader>sa",
+				"<leader>ss",
 				"<cmd>Telescope aerial<cr>",
 				desc = "Goto Symbol (Aerial)",
 			},
@@ -624,9 +802,23 @@ return {
 	{
 		"akinsho/toggleterm.nvim",
 		versions = "*",
-		config = true,
-		-- opts = {
-		-- 	open_mapping = [[C-/]],
-		-- },
+		lazy = false,
+		opts = {
+			open_mapping = { [[<C-/>]], [[<C-_>]] },
+			insert_mappings = true,
+			terminal_mappings = true,
+			direction = "float",
+		},
+		winbar = {
+			enabled = true,
+			name_formatter = function()
+				return "YukiTerm"
+			end,
+		},
+	},
+	{
+		"smjonas/inc-rename.nvim",
+		cmd = "IncRename",
+		opts = {},
 	},
 }

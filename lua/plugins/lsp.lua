@@ -118,7 +118,7 @@ return {
 					enabled = false,
 				},
 				document_highlight = {
-					enabled = true,
+					enabled = false,
 				},
 				capabilities = {
 					workspace = {

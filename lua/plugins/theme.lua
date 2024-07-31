@@ -8,6 +8,7 @@ return {
 			alpha = true,
 			cmp = true,
 			dashboard = true,
+			grug_far = true,
 			flash = true,
 			gitsigns = true,
 			headlines = true,

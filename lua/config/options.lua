@@ -1,3 +1,4 @@
+vim.g.mapleader = " "
 vim.g.autoformat = true
 vim.g.root_spec = { "lsp", { ".git", "lua" }, "cwd" }
 local opt = vim.opt
@@ -5,7 +6,7 @@ local opt = vim.opt
 opt.autowrite = true
 opt.clipboard = "unnamedplus"
 opt.conceallevel = 2
-opt.confirm = true
+-- opt.confirm = true
 opt.completeopt = { "menuone", "noselect" }
 opt.cursorline = true
 opt.expandtab = true

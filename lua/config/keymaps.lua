@@ -1,5 +1,4 @@
 local map = YukiVim.safe_keymap_set
-
 map({ "n", "v", "i", "t" }, "：", ":")
 map({ "n", "v", "i", "t" }, "；", ";")
 map({ "n", "v", "i", "t" }, "‘", "'")
@@ -51,19 +50,6 @@ map("n", "[w", diagnostic_goto(false, "WARN"), { desc = "Prev Warning" })
 -- ]],
 -- 	false
 -- )
--- terminal setting.
-vim.api.nvim_create_autocmd("TermEnter", {
-	pattern = "term://*toggleterm#*",
-	callback = function()
-		-- map("t", "<C-/>", "<cmd>ToggleTerm<CR>")
-		vim.api.nvim_set_keymap("t", "<C-/>", '<cmd>exe v:count1 . "ToggleTerm"<CR>', { noremap = true, silent = true })
-		vim.api.nvim_set_keymap("t", "<C-_>", '<cmd>exe v:count1 . "ToggleTerm"<CR>', { noremap = true, silent = true })
-	end,
-})
-
-map("n", "<C-/>", '<cmd>exe v:count1 . "ToggleTerm"<CR>')
-map("n", "<C-_>", '<cmd>exe v:count1 . "ToggleTerm"<cr>')
-map("i", "<C-/>", "<Esc><Cmd>exe v:count1 . ToggleTerm<CR>")
 
 -- Resize window using <ctrl> arrow keys
 map("n", "<C-Up>", "<cmd>resize +2<cr>", { desc = "Increase window height" })

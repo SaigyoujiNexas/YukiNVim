@@ -389,10 +389,10 @@ function M.keymap.get()
     -- stylua: ignore
     M._keys =  {
       { "<leader>cl", "<cmd>LspInfo<cr>", desc = "Lsp Info" },
-      { "gd", vim.lsp.buf.definition, desc = "Goto Definition", has = "definition" },
-      { "gr", vim.lsp.buf.references, desc = "References", nowait = true },
-      { "gI", vim.lsp.buf.implementation, desc = "Goto Implementation" },
-      { "gy", vim.lsp.buf.type_definition, desc = "Goto T[y]pe Definition" },
+      { "gd", function() require("telescope.builtin").lsp_definitions({reuse_win = true}) end, desc = "Goto Definition", has = "definition" },
+      { "gr", function() require("telescope.builtin").lsp_references() end, desc = "References", nowait = true },
+      { "gI", function() require("telescope.builtin").lsp_implementations({reuse_win = true}) end, desc = "Goto Implementation" },
+      { "gy", function()  require("telescope.builtin").lsp_type_definitions({reuse_win = true}) end, desc = "Goto T[y]pe Definition" },
       { "gD", vim.lsp.buf.declaration, desc = "Goto Declaration" },
       { "K", vim.lsp.buf.hover, desc = "Hover" },
       { "gK", vim.lsp.buf.signature_help, desc = "Signature Help", has = "signatureHelp" },
@@ -401,7 +401,10 @@ function M.keymap.get()
       { "<leader>cc", vim.lsp.codelens.run, desc = "Run Codelens", mode = { "n", "v" }, has = "codeLens" },
       { "<leader>cC", vim.lsp.codelens.refresh, desc = "Refresh & Display Codelens", mode = { "n" }, has = "codeLens" },
       { "<leader>cR", YukiVim.lsp.rename_file, desc = "Rename File", mode ={"n"}, has = { "workspace/didRenameFiles", "workspace/willRenameFiles" } },
-      { "<leader>cr", vim.lsp.buf.rename, desc = "Rename", has = "rename" },
+      { "<leader>cr", function() 
+            local inc_rename = require("inc_rename")
+            return ":" .. inc_rename.config.cmd_name .. " " .. vim.fn.expand("<cword>")
+        end, expr = true, desc = "Rename (inc-rename.nvim)", has = "rename" },
       { "<leader>cA", YukiVim.lsp.action.source, desc = "Source Action", has = "codeAction" },
       { "]]", function() YukiVim.lsp.words.jump(vim.v.count1) end, has = "documentHighlight",
         desc = "Next Reference", cond = function() return YukiVim.lsp.words.enabled end },
