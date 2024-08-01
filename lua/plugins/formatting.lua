@@ -1,34 +1,59 @@
 local M = {}
 
----@param opts ConformOpts
+---@param opts conform.setupOpts
 function M.setup(_, opts)
-	for name, formatter in pairs(opts.formatters or {}) do
-		if type(formatter) == "table" then
-			---@diagnostic disable-next-line: undefined-field
-			if formatter.extra_args then
-				---@diagnostic disable-next-line: undefined-field
-				formatter.prepend_args = formatter.extra_args
-				YukiVim.deprecate(
-					("opts.formatters.%s.extra_args"):format(name),
-					("opts.formatters.%s.prepend_args"):format(name)
-				)
-			end
-		end
-	end
-
-	for _, key in ipairs({ "format_on_save", "format_after_save" }) do
-		if opts[key] then
-			YukiVim.warn(
-				("Don't set `opts.%s` for `conform.nvim`.\n**YukiVim** will use the conform formatter automatically"):format(
-					key
-				)
-			)
-			---@diagnostic disable-next-line: no-unknown
-			opts[key] = nil
-		end
-	end
 	require("conform").setup(opts)
 end
+
+local supported = {
+	"css",
+	"graphql",
+	"handlebars",
+	"html",
+	"javascript",
+	"javascriptreact",
+	"json",
+	"jsonc",
+	"less",
+	"markdown",
+	"markdown.mdx",
+	"scss",
+	"typescript",
+	"typescriptreact",
+	"vue",
+	"yaml",
+}
+
+---@alias ConformCtx {buf: number, filename: string, dirname: string}
+
+---@param ctx ConformCtx
+function M.has_prettier_config(ctx)
+	vim.fn.system({ "prettier", "--find-config-path", ctx.filename })
+	return vim.v.shell_error == 0
+end
+
+--- Checks if a parser can be inferred for the given context:
+--- * If the filetype is in the supported list, return true
+--- * Otherwise, check if a parser can be inferred
+---@param ctx ConformCtx
+function M.has_prettier_parser(ctx)
+	local ft = vim.bo[ctx.buf].filetype --[[@as string]]
+	-- default filetypes are always supported
+	if vim.tbl_contains(supported, ft) then
+		return true
+	end
+	-- otherwise, check if a parser can be inferred
+	local ret = vim.fn.system({ "prettier", "--file-info", ctx.filename })
+	---@type boolean, string?
+	local ok, parser = pcall(function()
+		return vim.fn.json_decode(ret).inferredParser
+	end)
+	return ok and parser and parser ~= vim.NIL
+end
+
+M.has_prettier_config = YukiVim.memorize(M.has_prettier_config)
+M.has_prettier_parser = YukiVim.memorize(M.has_prettier_parser)
+
 return {
 
 	{
@@ -70,10 +95,7 @@ return {
 					priority = 100,
 					primary = true,
 					format = function(buf)
-						local plugin = require("lazy.core.config").plugins["conform.nvim"]
-						local Plugin = require("lazy.core.plugin")
-						local opts = Plugin.values(plugin, "opts", false)
-						require("conform").format(YukiVim.merge({}, opts.format, { bufnr = buf }))
+						require("conform").format({ bufnr = buf })
 					end,
 					sources = function(buf)
 						local ret = require("conform").list_formatters(buf)
@@ -86,27 +108,20 @@ return {
 			end)
 		end,
 		opts = function()
-			local plugin = require("lazy.core.config").plugins["conform.nvim"]
-			if plugin.config ~= M.setup then
-				YukiVim.error({
-					"Don't set `plugin.config` for `conform.nvim`.\n",
-				}, { title = "YukiVim" })
-			end
-			---@class ConformOpts
+			---@type conform.setupOpts
 			local opts = {
 				format = {
 					timeout_ms = 3000,
 					async = false,
 					quiet = false,
-					lsp_fallback = true,
+					lsp_format = "fallback",
 				},
-				---@type table<string, conform.FormatterUnit[]>
 				formatters_by_ft = {
 					lua = { "stylua" },
 					fish = { "fish_indent" },
 					sh = { "shfmt" },
 					cs = { "csharpier" },
-					python = { "black" },
+					["python"] = { "black" },
 					["javascript"] = { "prettier" },
 					["javascriptreact"] = { "prettier" },
 					["typescript"] = { "prettier" },
@@ -127,6 +142,11 @@ return {
 				---@type table<string, conform.FormatterConfigOverride|fun(bufnr: integer): nil|conform.FormatterConfigOverride>
 				formatters = {
 					injected = { options = { ignore_errors = true } },
+					prettier = {
+						condition = function(_, ctx)
+							return M.has_prettier_parser(ctx) and M.has_prettier_config(ctx)
+						end,
+					},
 				},
 			}
 			return opts

@@ -1,5 +1,3 @@
-package.path = package.path .. ";" .. vim.fn.expand("$HOME") .. "/.luarocks/share/lua/5.1/?/init.lua;"
-package.path = package.path .. ";" .. vim.fn.expand("$HOME") .. "/.luarocks/share/lua/5.1/?.lua;"
 local highlight = {
 	"RainbowRed",
 	"RainbowYellow",
@@ -13,7 +11,6 @@ return {
 	{
 		"echasnovski/mini.animate",
 		event = "VeryLazy",
-		cond = not vim.g.neovide,
 		opts = function()
 			local mouse_scrolled = false
 			for _, scroll in ipairs({ "Up", "Down" }) do
@@ -23,6 +20,13 @@ return {
 					return key
 				end, { expr = true })
 			end
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = "grug-far",
+				callback = function()
+					vim.b.minianimate_disable = true
+				end,
+			})
+
 			local animate = require("mini.animate")
 			return {
 				resize = {
@@ -56,9 +60,8 @@ return {
 	},
 	{
 		"akinsho/bufferline.nvim",
-		version = "*",
 		event = "VeryLazy",
-		dependencies = { "nvim-tree/nvim-web-devicons" },
+		dependencies = { "nvim-tree/nvim-web-devicons", "echasnovski/mini.bufremove", version = false },
 		opts = function()
 			return {
 				options = {
@@ -71,7 +74,7 @@ return {
 					diagnostics = "nvim_lsp",
 					always_show_bufferline = false,
 					diagnostics_indicator = function(_, _, diag)
-						local icons = require("config").icons.diagnostics
+						local icons = YukiVim.config.icons.diagnostics
 						local ret = (diag.error and icons.Error .. diag.error .. " " or "")
 							.. (diag.warning and icons.Warn .. diag.warning or "")
 						return vim.trim(ret)
@@ -84,12 +87,15 @@ return {
 							text_align = "left",
 						},
 					},
+					get_element_icon = function(opts)
+						return YukiVim.config.icons.ft[opts.filetype]
+					end,
 				},
 			}
 		end,
 		config = function(_, opts)
 			require("bufferline").setup(opts)
-			vim.api.nvim_create_autocmd("BufAdd", {
+			vim.api.nvim_create_autocmd({ "BufAdd", "BufDelete" }, {
 				callback = function()
 					vim.schedule(function()
 						pcall(nvim_bufferline)
@@ -98,9 +104,13 @@ return {
 			})
 		end,
 		keys = {
+			{ "<leader>bp", "<Cmd>BufferLineTogglePin<CR>", desc = "Toggle Pin" },
+			{ "<leader>bP", "<Cmd>BufferLineGroupClose ungrouped<CR>", desc = "Delete Non-Pinned Buffers" },
 			{ "<leader>bo", "<Cmd>BufferLineCloseOthers<CR>", desc = "Delete other buffers" },
 			{ "<leader>br", "<Cmd>BufferLineCloseRight<CR>", desc = "Delete buffers to the right" },
 			{ "<leader>bl", "<Cmd>BufferLineCloseLeft<CR>", desc = "Delete buffers to the left" },
+			{ "<S-h>", "<cmd>BufferLineCyclePrev<cr>", desc = "Prev Buffer" },
+			{ "<S-l>", "<cmd>BufferLineCycleNext<cr>", desc = "Next Buffer" },
 			{ "[b", "<cmd>BufferLineCyclePrev<cr>", desc = "Prev buffer" },
 			{ "]b", "<cmd>BufferLineCycleNext<cr>", desc = "Next buffer" },
 		},
@@ -171,39 +181,6 @@ return {
 		end,
 	},
 	{
-		"3rd/image.nvim",
-		event = "VeryLazy",
-		opts = {
-			backend = "kitty",
-			integrations = {
-				markdown = {
-					enabled = true,
-					clear_in_insert_mode = false,
-					download_remote_images = true,
-					only_render_image_at_cursor = false,
-					filetypes = { "markdown", "vimwiki" }, -- markdown extensions (ie. quarto) can go here
-				},
-				neorg = {
-					enabled = true,
-					clear_in_insert_mode = false,
-					download_remote_images = true,
-					only_render_image_at_cursor = false,
-					filetypes = { "norg" },
-				},
-			},
-			max_width = nil,
-			max_height = nil,
-			max_width_window_percentage = nil,
-			max_height_window_percentage = 50,
-			kitty_method = "normal",
-			hijack_file_patterns = { "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp" }, -- render image files as images when opened
-		},
-	},
-	{
-		"edluffy/hologram.nvim",
-		opts = {},
-	},
-	{
 		"lukas-reineke/indent-blankline.nvim",
 		main = "ibl",
 		opts = function()
@@ -262,6 +239,9 @@ return {
 					"help",
 					"alpha",
 					"dashboard",
+					"fzf",
+					"help",
+
 					"neo-tree",
 					"Trouble",
 					"trouble",
@@ -394,7 +374,6 @@ return {
 		"folke/noice.nvim",
 		event = "VeryLazy",
 		dependencies = {
-			"MunifTanjim/nui.nvim",
 			"rcarriga/nvim-notify",
 		},
 		opts = {
@@ -429,7 +408,6 @@ return {
 	{
 		"rcarriga/nvim-notify",
 		opts = {
-			background_colour = "#000000",
 			timeout = 3000,
 			icons = {
 				ERROR = "",
@@ -532,6 +510,9 @@ return {
 					},
 					"neo-tree",
 				},
+				right = {
+					{ title = "Grug Far", ft = "grug-far", size = { width = 0.4 } },
+				},
 				keys = {
 					-- increase width
 					["<c-Right>"] = function(win)
@@ -551,6 +532,19 @@ return {
 					end,
 				},
 			}
+			for _, pos in ipairs({ "top", "bottom", "left", "right" }) do
+				opts[pos] = opts[pos] or {}
+				table.insert(opts[pos], {
+					ft = "trouble",
+					filter = function(_buf, win)
+						return vim.w[win].trouble
+							and vim.w[win].trouble.position == pos
+							and vim.w[win].trouble.type == "split"
+							and vim.w[win].trouble.relative == "editor"
+							and not vim.w[win].trouble_preview
+					end,
+				})
+			end
 			return opts
 		end,
 	},
@@ -576,6 +570,30 @@ return {
 		end,
 	},
 	{
+		"j-hui/fidget.nvim",
+		opts = {},
+	},
+	{
+		"echasnovski/mini.icons",
+		lazy = true,
+		opts = {
+			file = {
+				[".keep"] = { glyph = "󰊢", hl = "MiniIconsGrey" },
+				["devcontainer.json"] = { glyph = "", hl = "MiniIconsAzure" },
+			},
+			filetype = {
+				dotenv = { glyph = "", hl = "MiniIconsYellow" },
+			},
+		},
+		init = function()
+			package.preload["nvim-web-devicons"] = function()
+				require("mini.icons").mock_nvim_web_devicons()
+				return package.loaded["nvim-web-devicons"]
+			end
+		end,
+	},
+	{ "MunifTanjim/nui.nvim", lazy = true },
+	{
 		"akinsho/bufferline.nvim",
 		optional = true,
 		opts = function()
@@ -584,14 +602,19 @@ return {
 				local get = Offset.get
 				Offset.get = function()
 					if package.loaded.edgy then
+						local old_offset = get()
 						local layout = require("edgy.config").layout
 						local ret = { left = "", left_size = 0, right = "", right_size = 0 }
 						for _, pos in ipairs({ "left", "right" }) do
 							local sb = layout[pos]
+							local title = " Sidebar" .. string.rep(" ", sb.bounds.width - 8)
 							if sb and #sb.wins > 0 then
-								local title = " Sidebar" .. string.rep(" ", sb.bounds.width - 8)
-								ret[pos] = "%#EdgyTitle#" .. title .. "%*" .. "%#WinSeparator#│%*"
-								ret[pos .. "_size"] = sb.bounds.width
+								ret[pos] = old_offset[pos .. "_size"] > 0 and old_offset[pos]
+									or pos == "left" and ("%#Bold#" .. title .. "%*" .. "%#BufferLineOffsetSeparator#│%*")
+									or pos == "right"
+										and ("%#BufferLineOffsetSeparator#│%*" .. "%#Bold#" .. title .. "%*")
+								ret[pos .. "_size"] = old_offset[pos .. "_size"] > 0 and old_offset[pos .. "_size"]
+									or sb.bounds.width
 							end
 						end
 						ret.total_size = ret.left_size + ret.right_size
@@ -604,9 +627,5 @@ return {
 				Offset.edgy = true
 			end
 		end,
-	},
-	{
-		"j-hui/fidget.nvim",
-		opts = {},
 	},
 }

@@ -3,12 +3,7 @@ local haskell_ft = { "haskell", "lhaskell", "cabal", "cabalproject" }
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
-		optional = true,
-		opts = function(_, opts)
-			if opts.ensure_installed ~= "all" then
-				opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "haskell" })
-			end
-		end,
+		opts = { ensure_installed = { "haskell" } },
 	},
 	{
 		"mrcjkb/haskell-tools.nvim",
@@ -30,21 +25,13 @@ return {
 	},
 	{
 		"mfussenegger/nvim-dap",
+		optional = true,
 		dependencies = {
 			{
 				"williamboman/mason.nvim",
 				opts = { ensure_installed = { "haskell-debug-adapter" } },
 			},
 		},
-	},
-	{
-		"mrcjkb/haskell-snippets.nvim",
-		ft = haskell_ft,
-		dependencies = { "L3MON4D3/LuaSnip" },
-		config = function()
-			local haskell_snippets = require("haskell-snippets").all
-			require("luasnip").add_snippets("haskell", haskell_snippets, { key = "haskell" })
-		end,
 	},
 	{
 		"luc-tielen/telescope_hoogle",
@@ -58,6 +45,7 @@ return {
 	},
 	{
 		"nvim-neotest/neotest",
+		optional = true,
 		dependencies = { "mrcjkb/neotest-haskell" },
 		opts = {
 			adapters = {

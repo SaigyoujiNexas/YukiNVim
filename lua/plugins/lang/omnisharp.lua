@@ -17,6 +17,7 @@ return {
 	},
 	{
 		"stevearc/conform.nvim",
+		optional = true,
 		opts = {
 			formatters_by_ft = {
 				cs = { "csharpier" },
@@ -61,6 +62,7 @@ return {
 	},
 	{
 		"mfussenegger/nvim-dap",
+		optinal = true,
 		opts = function()
 			local dap = require("dap")
 			if not dap.adapters["netcoredbg"] then
@@ -68,6 +70,9 @@ return {
 					type = "executable",
 					command = vim.fn.exepath("netcoredbg"),
 					args = { "--interpreter=vscode" },
+					options = {
+						detached = false,
+					},
 				}
 			end
 			for _, lang in ipairs({ "cs", "fsharp", "vb" }) do
@@ -90,6 +95,7 @@ return {
 	},
 	{
 		"nvim-neotest/neotest",
+		optional = true,
 		dependencies = {
 			"Issafalcon/neotest-dotnet",
 		},

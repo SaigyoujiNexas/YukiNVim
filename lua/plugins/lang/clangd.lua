@@ -1,12 +1,9 @@
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
-		opts = function(_, opts)
-			if opts.ensure_installed ~= "all" then
-				opts.ensure_installed =
-					YukiVim.list_insert_unique(opts.ensure_installed, { "c", "cpp", "objc", "cuda", "proto" })
-			end
-		end,
+		opts = {
+			ensure_installed = { "c", "cpp", "objc", "cuda", "proto" },
+		},
 	},
 	{
 		"p00f/clangd_extensions.nvim",
@@ -37,40 +34,21 @@ return {
 				},
 			},
 		},
-		init = function()
-			local augroup = vim.api.nvim_create_augroup("clangd_extensions", { clear = true })
-			vim.api.nvim_create_autocmd("LspAttach", {
-				group = augroup,
-				desc = "Load clangd_extensions with clangd",
-				callback = function(args)
-					if assert(vim.lsp.get_client_by_id(args.data.client_id)).name == "clangd" then
-						require("clangd_extensions")
-						vim.api.nvim_del_augroup_by_id(augroup)
-					end
-				end,
-			})
-		end,
 	},
-	{
-		"williamboman/mason-lspconfig.nvim",
-		opts = function(_, opts)
-			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, "clangd")
-		end,
-	},
-	{
-		"williamboman/mason.nvim",
-		opts = function(_, opts)
-			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "codelldb" })
-		end,
-	},
-	{
-
-		"WhoIsSethDaniel/mason-tool-installer.nvim",
-		optional = true,
-		opts = function(_, opts)
-			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "clangd", "codelldb" })
-		end,
-	},
+	-- {
+	-- 	"williamboman/mason.nvim",
+	-- 	opts = function(_, opts)
+	-- 		opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "codelldb" })
+	-- 	end,
+	-- },
+	-- {
+	--
+	-- 	"WhoIsSethDaniel/mason-tool-installer.nvim",
+	-- 	optional = true,
+	-- 	opts = function(_, opts)
+	-- 		opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "clangd", "codelldb" })
+	-- 	end,
+	-- },
 	{
 		"neovim/nvim-lspconfig",
 		opts = {
@@ -78,7 +56,7 @@ return {
 				-- Ensure mason installs the server
 				clangd = {
 					keys = {
-						{ "<leader>cR", "<cmd>ClangdSwitchSourceHeader<cr>", desc = "Switch Source/Header (C/C++)" },
+						{ "<leader>ch", "<cmd>ClangdSwitchSourceHeader<cr>", desc = "Switch Source/Header (C/C++)" },
 					},
 					root_dir = function(fname)
 						return require("lspconfig.util").root_pattern(
@@ -95,7 +73,7 @@ return {
 						)(fname) or require("lspconfig.util").find_git_ancestor(fname)
 					end,
 					capabilities = {
-						offsetEncoding = { "utf-8" },
+						offsetEncoding = { "utf-16" },
 					},
 					cmd = {
 						"clangd",
@@ -136,9 +114,7 @@ return {
 			-- Ensure C/C++ debugger is installed
 			"williamboman/mason.nvim",
 			optional = true,
-			opts = function(_, opts)
-				opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "codelldb" })
-			end,
+			opts = { ensure_installed = { "codelldb" } },
 		},
 		opts = function()
 			local dap = require("dap")

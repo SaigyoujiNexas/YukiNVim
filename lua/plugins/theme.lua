@@ -35,6 +35,7 @@ return {
 			neotree = true,
 			noice = true,
 			notify = true,
+			overseer = true,
 			semantic_tokens = true,
 			rainbow_delimiters = true,
 			telescope = true,

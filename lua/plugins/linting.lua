@@ -15,12 +15,17 @@ return {
 			local lint = require("lint")
 			for name, linter in pairs(opts.linters) do
 				if type(linter) == "table" and type(lint.linters[name]) == "table" then
-					lint.linters[name] = vim.tbl_extend("force", lint.linters[name], linter)
+					lint.linters[name] = vim.tbl_deep_extend("force", lint.linters[name], linter)
+					if type(linter.prepend_args) == "table" then
+						lint.linters[name].args = lint.linters[name].args or {}
+						vim.list_extend(lint.linters[name].args, linter.prepend_args)
+					end
 				else
 					lint.linters[name] = linter
 				end
 			end
 			lint.linters_by_ft = opts.linters_by_ft
+
 			function M.debounce(ms, fn)
 				local timer = vim.loop.new_timer()
 				return function(...)
@@ -33,10 +38,13 @@ return {
 			end
 			function M.lint()
 				local names = lint._resolve_linter_by_ft(vim.bo.filetype)
+				names = vim.list_extend({}, names)
+
 				if #names == 0 then
 					vim.list_extend(names, lint.linters_by_ft["_"] or {})
 				end
 				vim.list_extend(names, lint.linters_by_ft["*"] or {})
+
 				local ctx = { filename = vim.api.nvim_buf_get_name(0) }
 				ctx.dirname = vim.fn.fnamemodify(ctx.filename, ":h")
 				names = vim.tbl_filter(function(name)
@@ -78,26 +86,6 @@ return {
 						priority = 200,
 						filter = "eslint",
 					})
-
-					-- Use EslintFixAll on Neovim < 0.10.0
-					if not pcall(require, "vim.lsp._dynamic") then
-						formatter.name = "eslint: EslintFixAll"
-						formatter.sources = function(buf)
-							local client = get_client(buf)
-							return client and { "eslint" } or {}
-						end
-						formatter.format = function(buf)
-							local client = get_client(buf)
-							if client then
-								local diag =
-									vim.diagnostic.get(buf, { namespace = vim.lsp.diagnostic.get_namespace(client.id) })
-								if #diag > 0 then
-									vim.cmd("EslintFixAll")
-								end
-							end
-						end
-					end
-
 					-- register the formatter with LazyVim
 					YukiVim.format.register(formatter)
 				end,

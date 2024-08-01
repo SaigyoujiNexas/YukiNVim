@@ -6,7 +6,7 @@ return {
 				"Saecki/crates.nvim",
 				event = { "BufRead Cargo.toml" },
 				opts = {
-					src = {
+					completion = {
 						cmp = { enabled = true },
 					},
 				},
@@ -20,14 +20,20 @@ return {
 	{
 		"nvim-treesitter/nvim-treesitter",
 		opts = function(_, opts)
-			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "ron", "rust", "toml" })
+			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "ron", "rust" })
+		end,
+	},
+	{
+		"williamboman/mason.nvim",
+		optional = true,
+		opts = function(_, opts)
+			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "codelldb" })
 		end,
 	},
 	{
 		"neovim/nvim-lspconfig",
 		opts = {
 			servers = {
-				rust_analyzer = {},
 				taplo = {
 					keys = {
 						{
@@ -44,28 +50,16 @@ return {
 					},
 				},
 			},
-			setup = {
-				rust_analyzer = function()
-					return true
-				end,
-			},
 		},
-	},
-	{
-		"williamboman/mason.nvim",
-		optional = true,
-		opts = function(_, opts)
-			opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "codelldb" })
-		end,
 	},
 	{
 		"nvim-neotest/neotest",
 		optional = true,
-		opts = function(_, opts)
-			opts.adapters = YukiVim.list_insert_unique(opts.adapters, {
-				require("rustaceanvim.neotest"),
-			})
-		end,
+		opts = {
+			adapters = {
+				["rustaceanvim.neotest"] = {},
+			},
+		},
 	},
 	{
 		"mrcjkb/rustaceanvim",
@@ -87,14 +81,12 @@ return {
 						cargo = {
 							allFeatures = true,
 							loadOutDirsFromCheck = true,
-							runBuildScripts = true,
+							buildScripts = {
+								enable = true,
+							},
 						},
 						-- Add clippy lints for Rust.
-						checkOnSave = {
-							allFeatures = true,
-							command = "clippy",
-							extraArgs = { "--no-deps" },
-						},
+						checkOnSave = true,
 						procMacro = {
 							enable = true,
 							ignored = {
@@ -109,6 +101,12 @@ return {
 		},
 		config = function(_, opts)
 			vim.g.rustaceanvim = vim.tbl_deep_extend("keep", vim.g.rustaceanvim or {}, opts or {})
+			if vim.fn.executable("rust-analyzer") == 0 then
+				YukiVim.error(
+					"**rust-analyzer** not found in PATH, please install it.\nhttps://rust-analyzer.github.io/",
+					{ title = "rustaceanvim" }
+				)
+			end
 		end,
 	},
 }

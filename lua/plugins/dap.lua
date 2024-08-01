@@ -74,6 +74,7 @@ return {
 	},
 	opts = function()
 		local dap = require("dap")
+		require("overseer").enable_dap()
 		if not dap.adapters["netcoredbg"] then
 			require("dap").adapters["netcoredbg"] = {
 				type = "executable",

@@ -320,4 +320,20 @@ return {
 			table.insert(opts.sources, { name = "lazydev", group_index = 0 })
 		end,
 	},
+	{
+		"danymat/neogen",
+		cmd = "Neogen",
+		keys = {
+			{
+				"<leader>cn",
+				function()
+					require("neogen").generate({})
+				end,
+				desc = "Generate Annotations (Neogen)",
+			},
+		},
+		opts = function(_, opts)
+			opts.snippet_engine = "nvim"
+		end,
+	},
 }

@@ -143,4 +143,33 @@ function M.safe_keymap_set(mode, lhs, rhs, opts)
 	end
 end
 
+---@generic T
+---@param list T[]
+---@return T[]
+function M.dedup(list)
+	local ret = {}
+	local seen = {}
+	for _, v in ipairs(list) do
+		if not seen[v] then
+			table.insert(ret, v)
+			seen[v] = true
+		end
+	end
+	return ret
+end
+
+local cache = {} ---@type table<(fun()), table<string, any>>
+---@generic T: fun()
+---@param fn T
+---@return T
+function M.memorize(fn)
+	return function(...)
+		local key = vim.inspect({ ... })
+		cache[fn] = cache[fn] or {}
+		if cache[fn][key] == nil then
+			cache[fn][key] = fn(...)
+		end
+		return cache[fn][key]
+	end
+end
 return M

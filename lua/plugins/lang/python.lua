@@ -1,3 +1,4 @@
+local ruff = "ruff"
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
@@ -10,11 +11,24 @@ return {
 				pyright = {
 					enabled = true,
 				},
-				basedpyright = {
-					enabled = false,
+				ruff = {
+					cmd_env = { RUFF_TRACE = "messages" },
+					init_options = {
+						settings = {
+							logLevel = "error",
+						},
+					},
+					keys = {
+						{
+							"<leader>co",
+							YukiVim.lsp.action["source.organizeImports"],
+							desc = "Organize Imports",
+						},
+					},
+					enabled = true,
 				},
 				ruff_lsp = {
-					enabled = true,
+					enabled = false,
 					keys = {
 						{
 							"<leader>co",
@@ -23,78 +37,33 @@ return {
 						},
 					},
 				},
-				ruff = {
-					enabled = false,
-				},
+			},
+
+			setup = {
+				[ruff] = function()
+					YukiVim.lsp.on_attach(function(client, _)
+						-- Disable hover in favor of Pyright
+						client.server_capabilities.hoverProvider = false
+					end, ruff)
+				end,
 			},
 		},
-		setup = {
-			ruff_lsp = function()
-				YukiVim.lsp.on_attach(function(client, _)
-					client.server_capabilities.hoverProvider = false
-				end, "ruff_lsp")
-			end,
-		},
-	},
-	-- {
-	-- 	"williamboman/mason-lspconfig.nvim",
-	-- 	opts = function(_, opts)
-	-- 		opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "pyright" })
-	-- 	end,
-	-- },
-	-- {
-	-- 	"jay-babu/mason-null-ls.nvim",
-	--
-	-- 		opts.ensure_installed = YukiVim.list_insert_unique(opts.ensure_installed, { "black", "isort" })
-	-- 	end,
-	-- },
-	{
-		"mfussenegger/nvim-dap-python",
-        -- stylua: ignore
-        keys = {
-            { "<leader>dPt", function() require('dap-python').test_method() end, desc = "Debug Method", ft = "python" },
-            { "<leader>dPc", function() require('dap-python').test_class() end, desc = "Debug Class", ft = "python" },
-        },
-		config = function()
-			local path = require("mason-registry").get_package("debugpy"):get_install_path()
-			require("dap-python").setup(path .. "/venv/bin/python")
-		end,
-	},
-	{
-		"linux-cultist/venv-selector.nvim",
-		cmd = "VenvSelect",
-		opts = function(_, opts)
-			if require("lazyvim.util").has("nvim-dap-python") then
-				opts.dap_enabled = true
-			end
-			return vim.tbl_deep_extend("force", opts, {
-				name = {
-					"venv",
-					".venv",
-					"env",
-					".env",
-				},
-			})
-		end,
-		keys = { { "<leader>cv", "<cmd>:VenvSelect<cr>", desc = "Select VirtualEnv" } },
 	},
 	{
 		"nvim-neotest/neotest",
+		optional = true,
 		dependencies = {
 			"nvim-neotest/neotest-python",
 		},
 		opts = {
 			adapters = {
-				["neotest-python"] = {
-					-- Here you can specify the settings for the adapter, i.e.
-					-- runner = "pytest",
-					-- python = ".venv/bin/python",
-				},
+				["neotest-python"] = {},
 			},
 		},
 	},
 	{
 		"mfussenegger/nvim-dap",
+		optional = true,
 		dependencies = {
 			"mfussenegger/nvim-dap-python",
 			keys = {
@@ -122,10 +91,33 @@ return {
 		},
 	},
 	{
+		"linux-cultist/venv-selector.nvim",
+		branch = "regexp",
+		cmd = "VenvSelect",
+		opts = {
+			settings = {
+				options = {
+					notify_user_on_venv_activation = true,
+				},
+			},
+		},
+		ft = "python",
+		keys = { { "<leader>cv", "<cmd>:VenvSelect<cr>", desc = "Select VirtualEnv" } },
+	},
+	{
 		"hrsh7th/nvim-cmp",
 		opts = function(_, opts)
 			opts.auto_brackets = opts.auto_brackets or {}
 			table.insert(opts.auto_brackets, "python")
 		end,
+	},
+	{
+		"jay-babu/mason-nvim-dap.nvim",
+		optional = true,
+		opts = {
+			handlers = {
+				python = function() end,
+			},
+		},
 	},
 }

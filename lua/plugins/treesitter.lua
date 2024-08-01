@@ -1,11 +1,3 @@
----@type string
-local xdg_config = vim.env.XDG_CONFIG_HOME or vim.env.HOME .. "/.config"
-
----@param path string
-local function have(path)
-	return vim.loop.fs_stat(xdg_config .. "/" .. path) ~= nil
-end
-
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
@@ -15,6 +7,7 @@ return {
 			require("lazy.core.loader").add_to_rtp(plugin)
 			require("nvim-treesitter.query_predicates")
 		end,
+		opts_extend = { "ensure_installed" },
 		dependencies = {
 			{
 				"nvim-treesitter/nvim-treesitter-textobjects",
@@ -58,39 +51,27 @@ return {
 			})
 			add("git_config")
 
-			if have("hypr") then
-				add("hyprlang")
-			end
-
-			if have("fish") then
-				add("fish")
-			end
-
-			if have("rofi") or have("wofi") then
-				add("rasi")
-			end
 			local other = {
 				auto_install = true,
 				highlight = { enable = true },
 				indent = { enable = true },
 				ensure_installed = {
-					"c_sharp",
-					"ron",
-					"rust",
 					"bash",
 					"c",
+					"c_sharp",
 					"diff",
 					"html",
+					"java",
 					"javascript",
 					"jsdoc",
 					"json",
-					"json5",
 					"jsonc",
-					"lua",
 					"luadoc",
+					"lua",
 					"luap",
 					"markdown",
 					"markdown_inline",
+					"printf",
 					"python",
 					"query",
 					"regex",
@@ -99,10 +80,8 @@ return {
 					"typescript",
 					"vim",
 					"vimdoc",
+					"xml",
 					"yaml",
-					"java",
-					"ninja",
-					"rst",
 				},
 				textobjects = {
 					move = {
@@ -118,14 +97,7 @@ return {
 		end,
 		config = function(_, opts)
 			if type(opts.ensure_installed) == "table" then
-				local added = {}
-				opts.ensure_installed = vim.tbl_filter(function(lang)
-					if added[lang] then
-						return false
-					end
-					added[lang] = true
-					return true
-				end, opts.ensure_installed)
+				opts.ensure_installed = YukiVim.dedup(opts.ensure_installed)
 			end
 			require("nvim-treesitter.configs").setup(opts)
 		end,
@@ -134,6 +106,40 @@ return {
 		"nvim-treesitter/nvim-treesitter-context",
 		enabled = true,
 		opts = { mode = "cursor", max_lines = 3 },
+	},
+	{
+		"nvim-treesitter/nvim-treesitter-textobjects",
+		event = "VeryLazy",
+		enabled = true,
+		config = function()
+			local lazy_config = require("lazy.core.config")
+			-- If treesitter is already loaded, we need to run config again for textobjects
+			if lazy_config.plugins["nvim-treesitter"] and lazy_config.plugins["nvim-treesitter"]._.loaded then
+				local opts = YukiVim.opts("nvim-treesitter")
+				require("nvim-treesitter.configs").setup({ textobjects = opts.textobjects })
+			end
+
+			-- When in diff mode, we want to use the default
+			-- vim text objects c & C instead of the treesitter ones.
+			local move = require("nvim-treesitter.textobjects.move") ---@type table<string,fun(...)>
+			local configs = require("nvim-treesitter.configs")
+			for name, fn in pairs(move) do
+				if name:find("goto") == 1 then
+					move[name] = function(q, ...)
+						if vim.wo.diff then
+							local config = configs.get_module("textobjects.move")[name] ---@type table<string,string>
+							for key, query in pairs(config or {}) do
+								if q == query and key:find("[%]%[][cC]") then
+									vim.cmd("normal! " .. key)
+									return
+								end
+							end
+						end
+						return fn(q, ...)
+					end
+				end
+			end
+		end,
 	},
 	{
 		"windwp/nvim-ts-autotag",
