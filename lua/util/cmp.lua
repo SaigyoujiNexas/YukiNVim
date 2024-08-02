@@ -25,6 +25,7 @@ function M.snippet_preview(snippet)
 			return M.snippet_preview(placeholder.text)
 		end):gsub("%$0", "")
 end
+
 -- This function replaces nested placeholders in a snippet with LSP placeholders.
 function M.snippet_fix(snippet)
 	local texts = {} ---@type table<number, string>

@@ -53,16 +53,10 @@ function M.format(opts)
 	if not ((opts and opts.force) or M.enabled(buf)) then
 		return
 	end
-	local done = false
 	for _, formatter in ipairs(M.resolve(buf)) do
 		if formatter.active then
-			done = true
 			return formatter.format(buf)
 		end
-	end
-
-	if not done and opts and opts.force then
-		YukiVim.warn("No formatter available", { title = "YukiVim" })
 	end
 end
 
