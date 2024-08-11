@@ -171,6 +171,10 @@ function M.get_kind_filter(buf)
 	if M.kind_filter[ft] == false then
 		return
 	end
+	if type(M.kind_filter[ft]) == "table" then
+		---@diagnostic disable-next-line: return-type-mismatch
+		return M.kind_filter[ft]
+	end
 	---@diagnostic disable-next-line: return-type-mismatch
 	return type(M.kind_filter) == "table" and type(M.kind_filter.default) == "table" and M.kind_filter.default or nil
 end
@@ -182,16 +186,20 @@ function M.load(name)
 			require(mod)
 		end
 	end
-	_load("config." .. name)
 	local pattern = "YukiVim" .. name:sub(1, 1):upper() .. name:sub(2)
+	_load("config." .. name)
+	if vim.bo.filetype == "lazy" then
+		vim.cmd([[do VimResized]])
+	end
 	vim.api.nvim_exec_autocmds("User", { pattern = pattern, modeline = false })
 end
-M.initialized = false
+
+M.did_init = false
 function M.init()
-	if M.initialized then
+	if M.did_init then
 		return
 	end
-	M.initialized = true
+	M.did_init = true
 	M.load("options")
 end
 

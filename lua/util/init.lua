@@ -33,11 +33,11 @@ setmetatable(M, {
 })
 
 function M.is_win()
-	return vim.loop.os_uname().sysname:find("Windows") ~= nil
+	return vim.uv.os_uname().sysname:find("Windows") ~= nil
 end
 
 function M.is_mac()
-	return vim.loop.os_uname().sysname:find("Darwin") ~= nil
+	return vim.uv.os_uname().sysname:find("Darwin") ~= nil
 end
 
 ---@param plugin string
@@ -99,11 +99,15 @@ function M.list_insert_unique(lst, vals)
 	return lst
 end
 
+function M.is_loaded(name)
+	local Config = require("lazy.core.config")
+	return Config.plugins[name] and Config.plugins[name]._.loaded
+end
+
 ---@param name string
 ---@param fn fun(name:string)
 function M.on_load(name, fn)
-	local Config = require("lazy.core.config")
-	if Config.plugins[name] and Config.plugins[name]._.loaded then
+	if M.is_loaded(name) then
 		fn(name)
 	else
 		vim.api.nvim_create_autocmd("User", {

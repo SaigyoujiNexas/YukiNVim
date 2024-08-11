@@ -61,15 +61,15 @@ return {
 	{
 		"akinsho/bufferline.nvim",
 		event = "VeryLazy",
-		dependencies = { "nvim-tree/nvim-web-devicons", "echasnovski/mini.bufremove", version = false },
+		dependencies = { "nvim-tree/nvim-web-devicons", version = false },
 		opts = function()
 			return {
 				options = {
 					close_command = function(n)
-						require("mini.bufremove").delete(n, false)
+						YukiVim.ui.bufremove(n)
 					end,
 					right_mouse_command = function(n)
-						require("mini.bufremove").delete(n, false)
+						YukiVim.ui.bufremove(n)
 					end,
 					diagnostics = "nvim_lsp",
 					always_show_bufferline = false,

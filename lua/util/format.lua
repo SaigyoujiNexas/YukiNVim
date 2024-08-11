@@ -101,7 +101,7 @@ function M.info(buf)
 	end
 	YukiVim[enabled and "info" or "warn"](
 		table.concat(lines, "\n"),
-		{ title = "LazyFormat (" .. (enabled and "enabled" or "disabled") .. ")" }
+		{ title = "YukiFormat (" .. (enabled and "enabled" or "disabled") .. ")" }
 	)
 end
 function M.setup()
