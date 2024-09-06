@@ -26,7 +26,7 @@ vim.api.nvim_create_autocmd("VimResized", {
 		vim.cmd("tabnext " .. current_tab)
 	end,
 })
-
+-- go to last loc when opening a buffer
 vim.api.nvim_create_autocmd("BufReadPost", {
 	group = augroup("last_loc"),
 	callback = function(event)
@@ -77,6 +77,7 @@ vim.api.nvim_create_autocmd("FileType", {
 	end,
 })
 
+-- wrap and check for spell in text filetypes
 vim.api.nvim_create_autocmd("FileType", {
 	group = augroup("wrap_spell"),
 	pattern = { "gitcommit", "markdown", "text", "plaintex", "typst" },
@@ -104,31 +105,5 @@ vim.api.nvim_create_autocmd({ "BufWritePre" }, {
 		end
 		local file = vim.uv.fs_realpath(event.match) or event.match
 		vim.fn.mkdir(vim.fn.fnamemodify(file, ":p:h"), "p")
-	end,
-})
-
---vim.filetype.add({
---	pattern = {
---		[".*"] = {
---			function(path, buf)
---				return vim.bo[buf]
---						and vim.bo[buf].filetype ~= "bigfile"
---						and path
---						and vim.fn.getfsize(path) or 0 > vim.g.bigfile_size or 0
---						and "bigfile"
---					or nil
---			end,
---		},
---	},
---})
-
-vim.api.nvim_create_autocmd({ "FileType" }, {
-	group = augroup("bigfile"),
-	pattern = "bigfile",
-	callback = function(ev)
-		vim.b.minianimate_disable = true
-		vim.schedule(function()
-			vim.bo[ev.buf].syntax = vim.filetype.match({ buf = ev.buf }) or ""
-		end)
 	end,
 })

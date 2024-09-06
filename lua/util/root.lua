@@ -9,7 +9,9 @@ local M = setmetatable({}, {
 ---@class YukiRoot
 ---@field paths string[]
 ---@field sepc YukiRootSpec
+
 ---@alias YukiRootFn fun(buf: number): (string|string[])
+
 ---@alias YukiRootSpec string|string[]|YukiRootFn
 
 ---@type YukiRootSpec[]
@@ -32,6 +34,9 @@ function M.detectors.lsp(buf)
 		local workspace = client.config.workspace_folders
 		for _, ws in pairs(workspace or {}) do
 			roots[#roots + 1] = vim.uri_to_fname(ws.uri)
+		end
+		if client.root_dir then
+			roots[#roots + 1] = client.root_dir
 		end
 	end
 	return vim.tbl_filter(function(path)
@@ -162,10 +167,11 @@ end
 -- * lsp root_dir
 -- * root pattern of filename of the current buffer
 -- * root pattern of cwd
----@param opts? {normalize?:boolean}
+---@param opts? {normalize?:boolean, buf?:number}
 ---@return string
 function M.get(opts)
-	local buf = vim.api.nvim_get_current_buf()
+	opts = opts or {}
+	local buf = opts.buf or vim.api.nvim_get_current_buf()
 	local ret = M.cache[buf]
 	if not ret then
 		local roots = M.detect({ all = false })

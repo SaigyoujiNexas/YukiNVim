@@ -7,7 +7,6 @@ local LazyUtil = require("lazy.core.util")
 ---@field root YukiUtil.root
 ---@field toggle YukiUtil.toggle
 ---@field ui YukiUtil.ui
--- -@field terminal YukiUtil.terminal
 ---@field lualine YukiUtil.lualine
 ---@field cmp YukiUtil.cmp
 local M = {}
@@ -17,15 +16,6 @@ setmetatable(M, {
 		if LazyUtil[k] then
 			return LazyUtil[k]
 		end
-		-- local dep = deprecated[k]
-		-- if dep then
-		-- 	local mod = type(dep) == "table" and dep[1] or dep
-		-- 	local key = type(dep) == "table" and dep[2] or k
-		-- 	M.deprecate([[YukiVim.]] .. k, [[YukiVim.]] .. mod .. "." .. key)
-		-- 	---@diagnostic disable-next-line: no-unknown
-		-- 	t[mod] = require("util." .. mod) -- load here to prevent loops
-		-- 	return t[mod][key]
-		-- end
 		---@diagnostic disable-next-line: no-unknown
 		t[k] = require("util." .. k)
 		return t[k]

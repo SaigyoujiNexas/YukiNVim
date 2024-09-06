@@ -140,7 +140,7 @@ function M.setup(opts)
 				M.load("autocmds")
 			end
 			M.load("keymaps")
-			M.load("options")
+			-- M.load("options")
 
 			YukiVim.format.setup()
 			YukiVim.root.setup()
