@@ -170,8 +170,12 @@ return {
 			YukiVim.format.register(YukiVim.lsp.formatter())
 			if YukiVim.is_mac() then
 				require("lspconfig").sourcekit.setup({
-					cmd = {
-						"/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp",
+					capabilities = {
+						workspace = {
+							didChangeWatchedFiles = {
+								dynamicRegistration = true,
+							},
+						},
 					},
 				})
 			end
