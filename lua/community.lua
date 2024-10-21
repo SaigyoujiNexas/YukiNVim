@@ -16,6 +16,7 @@ return {
   { import = "astrocommunity.pack.bash" },
   { import = "astrocommunity.pack.cpp" },
   { import = "astrocommunity.pack.cs" },
+  { import = "astrocommunity.pack.dart" },
   { import = "astrocommunity.pack.fish" },
   { import = "astrocommunity.pack.go" },
   { import = "astrocommunity.pack.haskell" },
@@ -40,7 +41,7 @@ return {
   -- { import = "astrocommunity.indent.indent-rainbowline" },
   { import = "astrocommunity.indent.indent-blankline-nvim" },
   { import = "astrocommunity.editing-support.rainbow-delimiters-nvim" },
-  { import = "astrocommunity.bars-and-lines.bufferline-nvim" },
+  { import = "astrocommunity.bars-and-lines.vim-illuminate" },
   { import = "astrocommunity.utility.noice-nvim" },
   { import = "astrocommunity.split-and-window.edgy-nvim" },
   { import = "astrocommunity.split-and-window.windows-nvim" },
@@ -62,4 +63,5 @@ return {
   { import = "astrocommunity.terminal-integration.flatten-nvim" },
   { import = "astrocommunity.motion.flash-nvim" },
   { import = "astrocommunity.recipes.auto-session-restore" },
+  { import = "astrocommunity.comment.ts-comments-nvim" },
 }
