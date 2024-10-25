@@ -32,6 +32,7 @@ return {
         spell = false, -- sets vim.opt.spell
         signcolumn = "yes", -- sets vim.opt.signcolumn to yes
         wrap = false, -- sets vim.opt.wrap
+        scrolloff = 8,
       },
       g = { -- vim.g.<key>
         -- configure global vim variables (vim.g)
@@ -60,15 +61,11 @@ return {
           desc = "Close buffer from tabline",
         },
         ["<leader><space>"] = {
-          function()
-            require("telescope.builtin").find_files()
-          end,
+          function() require("telescope.builtin").find_files() end,
           desc = "Find files",
         },
         ["<Leader>/"] = {
-          function()
-            require("telescope.builtin").live_grep()
-          end,
+          function() require("telescope.builtin").live_grep() end,
           desc = "Live grep",
         },
         -- tables with just a `desc` key will be registered with which-key if it's installed
@@ -79,8 +76,8 @@ return {
         -- ["<C-S>"] = false,
       },
       t = {
-        ["<esc>"] = [[<C-\><C-n>]]
-      }
+        ["<esc>"] = [[<C-\><C-n>]],
+      },
     },
   },
 }
