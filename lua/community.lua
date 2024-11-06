@@ -38,7 +38,6 @@ return {
   { import = "astrocommunity.programming-language-support.web-tools-nvim" },
   -- ui config
   { import = "astrocommunity.colorscheme.catppuccin" },
-  -- { import = "astrocommunity.indent.indent-rainbowline" },
   { import = "astrocommunity.indent.indent-blankline-nvim" },
   { import = "astrocommunity.editing-support.rainbow-delimiters-nvim" },
   { import = "astrocommunity.bars-and-lines.vim-illuminate" },
@@ -64,4 +63,6 @@ return {
   { import = "astrocommunity.motion.flash-nvim" },
   { import = "astrocommunity.recipes.auto-session-restore" },
   { import = "astrocommunity.comment.ts-comments-nvim" },
+  -- vscode integration
+  { import = "astrocommunity.recipes.vscode" },
 }
